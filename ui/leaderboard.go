@@ -2,11 +2,8 @@ package ui
 
 import (
 	"encoding/csv"
-//	"fmt"
-//	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-//	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"os"
 	"sort"
@@ -16,6 +13,7 @@ import (
 type Player struct {
 	Name  string
 	Score int
+	UUID string
 }
 
 // ReadCSV reads the CSV file and returns a slice of Players
@@ -35,12 +33,12 @@ func ReadCSV(filename string) ([]Player, error) {
 	var players []Player
 	for _, record := range records[1:] { // Skipping the header in the CSV file
 		score, _ := strconv.Atoi(record[1]) // Convert score from string to int
-		players = append(players, Player{Name: record[0], Score: score})
+		players = append(players, Player{Name: record[0], Score: score, UUID: record[2]})
 	}
 	return players, nil
 }
 
-// UpdateLeaderboardContent dynamically updates the table with sorted data
+// updateLeaderboardContent dynamically updates the table with sorted data
 func updateLeaderboardContent(list *widget.Table, playerData [][]string) {
 	list.Refresh()
 }
@@ -48,16 +46,16 @@ func updateLeaderboardContent(list *widget.Table, playerData [][]string) {
 // DisplayLeaderboard creates a Fyne window displaying the players sorted by a selected order
 func DisplayLeaderboard(myApp fyne.App, window fyne.Window, players []Player) {
 	// Add header row to the playerData slice
-	playerData := [][]string{{"Name", "Score"}} // Header row
+	playerData := [][]string{{"Name", "Score", "UUID"}} // Header row
 
 	// Fill player data (skipping the header)
 	for _, player := range players {
-		playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score)})
+		playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
 	}
 
 	// Create a widget to show leaderboard data
 	list := widget.NewTable(
-		func() (int, int) { return len(playerData), 2 },
+		func() (int, int) { return len(playerData), 3 },
 		func() fyne.CanvasObject { return widget.NewLabel("") },
 		func(i widget.TableCellID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(playerData[i.Row][i.Col])
@@ -73,9 +71,9 @@ func DisplayLeaderboard(myApp fyne.App, window fyne.Window, players []Player) {
 			return players[i].Score > players[j].Score // Sort by score (descending)
 		})
 		// Update the playerData slice after sorting
-		playerData = [][]string{{"Name", "Score"}} // Recreate header
+		playerData = [][]string{{"Name", "Score","UUID"}} // Recreate header
 		for _, player := range players {
-			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score)})
+			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
 		}
 		list.Refresh()
 	})
@@ -85,19 +83,33 @@ func DisplayLeaderboard(myApp fyne.App, window fyne.Window, players []Player) {
 			return players[i].Name < players[j].Name // Sort by name (alphabetical)
 		})
 		// Update the playerData slice after sorting
-		playerData = [][]string{{"Name", "Score"}} // Recreate header
+		playerData = [][]string{{"Name", "Score","UUID"}} // Recreate header
 		for _, player := range players {
-			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score)})
+			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
 		}
 		list.Refresh()
 	})
 
+	sortByUUIDButton := widget.NewButton("Sort by UUID", func() {
+		sort.Slice(players, func(i, j int) bool {
+			return players[i].UUID < players[j].UUID // Sort by name (alphabetical)
+		})
+		// Update the playerData slice after sorting
+		playerData = [][]string{{"Name", "Score","UUID"}} // Recreate header
+		for _, player := range players {
+			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
+		}
+		list.Refresh()
+	})
+
+	//setting column widths
 	list.SetColumnWidth(0, 140)
 	list.SetColumnWidth(1, 140)
 
-	// Layout: display list and sorting options
+
+	//display list and sorting buttons
 	content := container.NewBorder(
-		container.NewHBox(sortByScoreButton, sortByNameButton),
+		container.NewHBox(sortByScoreButton, sortByNameButton, sortByUUIDButton),
 		nil, nil, nil,
 		list,
 	)

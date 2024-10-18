@@ -2,6 +2,8 @@ module hareandtortoise/v2
 
 go 1.23.1
 
+require github.com/google/uuid v1.1.2
+
 require (
 	fyne.io/fyne/v2 v2.5.1 // indirect
 	fyne.io/systray v1.11.0 // indirect

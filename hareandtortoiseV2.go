@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"hareandtortoise/v2/ui"
+	"hareandtortoise/v2/simulation"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -31,9 +32,12 @@ func main() {
 		newWindow.Show() // Again, use Show() instead of ShowAndRun
 	})
 	
+	newCharacterButton := widget.NewButton("Add user", func() {
+		simulation.CreateAnimal()
+	})
 
 	content := container.NewBorder(
-		container.NewHBox(raceTrackButton, leaderboardButton),
+		container.NewHBox(raceTrackButton, leaderboardButton, newCharacterButton),
 		nil, nil, nil,
 	)
 
