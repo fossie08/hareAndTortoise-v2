@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fyne.io/fyne/v2/app"
+//	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2"
@@ -9,22 +9,11 @@ import (
 	"image/color"
 )
 
-func DrawRaceTrack(numLanes int, laneHeight int, windowWidth float32) {
-	// Create a new app and window
-	myApp := app.New()
-	myWindow := myApp.NewWindow("Running Track")
-
+func DrawRaceTrack(myApp fyne.App, mainWindow fyne.Window, numLanes int, laneHeight int, windowWidth float32) {
 	// Create custom track container
 	trackContainer := container.NewWithoutLayout()
 
-	// Define lane count and lane height
-	// numLanes := 5
-	// laneHeight := 70
-
-	// Fixed window size
-	// windowWidth := 1000.0
 	windowHeight := float32(numLanes) * float32(laneHeight)
-	//laneHeight := float32(windowHeight / float64(numLanes))
 
 	// Alternate shades of green for lanes
 	lightGreen := color.RGBA{34, 139, 34, 255} // Lighter green
@@ -63,8 +52,8 @@ func DrawRaceTrack(numLanes int, laneHeight int, windowWidth float32) {
 	trackContainer.Add(finishText)
 
 	// Set the content of the window
-	myWindow.SetContent(trackContainer)
-	myWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight))) // Fixed window size
-	myWindow.CenterOnScreen()
-	myWindow.ShowAndRun()
+	mainWindow.SetContent(trackContainer)
+	mainWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight))) // Fixed window size
+	mainWindow.CenterOnScreen()
 }
+

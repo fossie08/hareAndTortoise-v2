@@ -2,8 +2,8 @@ package ui
 
 import (
 	"encoding/csv"
-	"fmt"
-	"fyne.io/fyne/v2/app"
+//	"fmt"
+//	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 //	"fyne.io/fyne/v2/layout"
@@ -46,10 +46,7 @@ func updateLeaderboardContent(list *widget.Table, playerData [][]string) {
 }
 
 // DisplayLeaderboard creates a Fyne window displaying the players sorted by a selected order
-func DisplayLeaderboard(players []Player) fyne.Window {
-	leaderboardApp := app.New()
-	window := leaderboardApp.NewWindow("Leaderboard")
-
+func DisplayLeaderboard(myApp fyne.App, window fyne.Window, players []Player) {
 	// Add header row to the playerData slice
 	playerData := [][]string{{"Name", "Score"}} // Header row
 
@@ -80,7 +77,7 @@ func DisplayLeaderboard(players []Player) fyne.Window {
 		for _, player := range players {
 			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score)})
 		}
-		updateLeaderboardContent(list, playerData)
+		list.Refresh()
 	})
 
 	sortByNameButton := widget.NewButton("Sort by Name", func() {
@@ -92,11 +89,13 @@ func DisplayLeaderboard(players []Player) fyne.Window {
 		for _, player := range players {
 			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score)})
 		}
-		updateLeaderboardContent(list, playerData)
+		list.Refresh()
 	})
-	list.SetColumnWidth(0,140)
-	list.SetColumnWidth(1,140)
-	// Layout: display list and sorting options, making the table take up the entire window
+
+	list.SetColumnWidth(0, 140)
+	list.SetColumnWidth(1, 140)
+
+	// Layout: display list and sorting options
 	content := container.NewBorder(
 		container.NewHBox(sortByScoreButton, sortByNameButton),
 		nil, nil, nil,
@@ -106,18 +105,4 @@ func DisplayLeaderboard(players []Player) fyne.Window {
 	window.SetContent(content)
 	window.Resize(fyne.NewSize(400, 500)) // Adjust size as needed
 	window.CenterOnScreen()
-
-	return window
-}
-
-func Leaderboard() {
-	// Load CSV data
-	players, err := ReadCSV("data/leaderboard.simulation")
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	// Display leaderboard sorted by name (default)
-	DisplayLeaderboard(players).ShowAndRun()
 }
