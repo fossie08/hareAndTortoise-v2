@@ -8,6 +8,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"fmt"
 )
 
 type Player struct {
@@ -44,10 +45,14 @@ func updateLeaderboardContent(list *widget.Table, playerData [][]string) {
 }
 
 // DisplayLeaderboard creates a Fyne window displaying the players sorted by a selected order
-func DisplayLeaderboard(myApp fyne.App, window fyne.Window, players []Player) {
+func DisplayLeaderboard() (content *fyne.Container) {
 	// Add header row to the playerData slice
 	playerData := [][]string{{"Name", "Score", "UUID"}} // Header row
-
+	players, err := ReadCSV("data/leaderboard.simulation")
+	if err != nil {
+		fmt.Println("Error loading leaderboard:", err)
+		return
+	}
 	// Fill player data (skipping the header)
 	for _, player := range players {
 		playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
@@ -108,13 +113,13 @@ func DisplayLeaderboard(myApp fyne.App, window fyne.Window, players []Player) {
 
 
 	//display list and sorting buttons
-	content := container.NewBorder(
+	content = container.NewBorder(
 		container.NewHBox(sortByScoreButton, sortByNameButton, sortByUUIDButton),
 		nil, nil, nil,
 		list,
 	)
-
-	window.SetContent(content)
-	window.Resize(fyne.NewSize(600, 500)) // Adjust size as needed
-	window.CenterOnScreen()
+	return
+	//window.SetContent(content)
+	//window.Resize(fyne.NewSize(400, 500)) // Adjust size as needed
+	//window.CenterOnScreen()
 }

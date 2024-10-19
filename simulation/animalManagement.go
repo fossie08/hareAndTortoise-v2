@@ -37,7 +37,7 @@ func WriteCSV(filename string, data [][]string, appendMode bool) error {
 func CreateAnimal () {
 	id := uuid.New().String()
 	data := [][]string{{"Name","0",id}}
-	err := WriteCSV("data/leaderboard.simulation", data, true)
+	err := WriteCSV("data/leaderboard.simulation", data, true)// true means append
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
