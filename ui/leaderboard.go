@@ -2,18 +2,21 @@ package ui
 
 import (
 	"encoding/csv"
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
+	"fmt"
 	"os"
 	"sort"
 	"strconv"
-	"fmt"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 type Player struct {
 	Name  string
 	Score int
+	MinSpeed float64
+	MaxSpeed float64
 	UUID string
 }
 
@@ -34,33 +37,35 @@ func ReadCSV(filename string) ([]Player, error) {
 	var players []Player
 	for _, record := range records[1:] { // Skipping the header in the CSV file
 		score, _ := strconv.Atoi(record[1]) // Convert score from string to int
-		players = append(players, Player{Name: record[0], Score: score, UUID: record[2]})
+		minSpeed, _ := strconv.ParseFloat(record[2], 64)
+		maxSpeed, _ := strconv.ParseFloat(record[3], 64)
+		players = append(players, Player{Name: record[0], Score: score, MinSpeed: minSpeed, MaxSpeed: maxSpeed, UUID: record[4]})
 	}
 	return players, nil
 }
 
-// updateLeaderboardContent dynamically updates the table with sorted data
-func updateLeaderboardContent(list *widget.Table, playerData [][]string) {
+// UpdateLeaderboardContent dynamically updates the table with sorted data
+func UpdateLeaderboardContent(list *widget.Table, playerData [][]string) {
 	list.Refresh()
 }
 
 // DisplayLeaderboard creates a Fyne window displaying the players sorted by a selected order
 func DisplayLeaderboard() (content *fyne.Container) {
 	// Add header row to the playerData slice
-	playerData := [][]string{{"Name", "Score", "UUID"}} // Header row
-	players, err := ReadCSV("data/leaderboard.simulation")
+	playerData := [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
+	players, err := ReadCSV("data/animal.simulation")
 	if err != nil {
 		fmt.Println("Error loading leaderboard:", err)
 		return
 	}
 	// Fill player data (skipping the header)
 	for _, player := range players {
-		playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
+		playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), strconv.FormatFloat(player.MinSpeed, 'g', -1, 64), strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64), player.UUID})
 	}
 
 	// Create a widget to show leaderboard data
 	list := widget.NewTable(
-		func() (int, int) { return len(playerData), 3 },
+		func() (int, int) { return len(playerData), 5 },
 		func() fyne.CanvasObject { return widget.NewLabel("") },
 		func(i widget.TableCellID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(playerData[i.Row][i.Col])
@@ -76,41 +81,44 @@ func DisplayLeaderboard() (content *fyne.Container) {
 			return players[i].Score > players[j].Score // Sort by score (descending)
 		})
 		// Update the playerData slice after sorting
-		playerData = [][]string{{"Name", "Score","UUID"}} // Recreate header
+		playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
 		for _, player := range players {
-			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
+			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), strconv.FormatFloat(player.MinSpeed, 'g', -1, 64), strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64), player.UUID})
 		}
-		list.Refresh()
+		UpdateLeaderboardContent(list, playerData) // Refresh the list with the updated playerData
 	})
-
+	
 	sortByNameButton := widget.NewButton("Sort by Name", func() {
 		sort.Slice(players, func(i, j int) bool {
 			return players[i].Name < players[j].Name // Sort by name (alphabetical)
 		})
 		// Update the playerData slice after sorting
-		playerData = [][]string{{"Name", "Score","UUID"}} // Recreate header
+		playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
 		for _, player := range players {
-			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
+			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), strconv.FormatFloat(player.MinSpeed, 'g', -1, 64), strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64), player.UUID})
 		}
-		list.Refresh()
+		UpdateLeaderboardContent(list, playerData) // Refresh the list with the updated playerData
 	})
-
+	
 	sortByUUIDButton := widget.NewButton("Sort by UUID", func() {
 		sort.Slice(players, func(i, j int) bool {
-			return players[i].UUID < players[j].UUID // Sort by name (alphabetical)
+			return players[i].UUID < players[j].UUID // Sort by UUID (alphabetical)
 		})
 		// Update the playerData slice after sorting
-		playerData = [][]string{{"Name", "Score","UUID"}} // Recreate header
+		playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
 		for _, player := range players {
-			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), player.UUID})
+			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), strconv.FormatFloat(player.MinSpeed, 'g', -1, 64), strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64), player.UUID})
 		}
-		list.Refresh()
+		UpdateLeaderboardContent(list, playerData) // Refresh the list with the updated playerData
 	})
+	
 
 	//setting column widths
 	list.SetColumnWidth(0, 140)
 	list.SetColumnWidth(1, 140)
-
+	list.SetColumnWidth(2, 140)
+	list.SetColumnWidth(3, 140)
+	list.SetColumnWidth(4, 280)
 
 	//display list and sorting buttons
 	content = container.NewBorder(

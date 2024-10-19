@@ -3,6 +3,7 @@ package main
 import (
 //	"fmt"
 	"hareandtortoise/v2/ui"
+	"hareandtortoise/v2/settings"
 //	"hareandtortoise/v2/simulation"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2"
@@ -18,19 +19,9 @@ func main() {
 	hareandtortoise := app.New()
 	mainWindow := hareandtortoise.NewWindow("Animal Simulation")
 
-	raceTrackButton := widget.NewButton("Open racetrack", func() {
-		newWindow := hareandtortoise.NewWindow("Running Track")
-		ui.DrawRaceTrack(hareandtortoise, newWindow, 10, 70, 1200.0)
-		newWindow.Show() // Not ShowAndRun, because ShowAndRun is only for the main window
-	})
-	/*
-	newCharacterButton := widget.NewButton("Add user", func() {
-		ui.AddAnimal(hareandtortoise).Show()
-	})
-*/
 	toolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
-			log.Println("New document")
+		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
+			log.Println("New race")
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.AccountIcon(), func() {
@@ -38,18 +29,24 @@ func main() {
 			ui.AddAnimal(hareandtortoise, addAnimalWindow)
 			addAnimalWindow.Show()
 		}),
-		widget.NewToolbarAction(theme.ContentCopyIcon(), func() {}),
-		widget.NewToolbarAction(theme.ContentPasteIcon(), func() {}),
+		widget.NewToolbarAction(theme.WarningIcon(), func() {
+			newWindow := hareandtortoise.NewWindow("Running Track")
+			ui.DrawRaceTrack(hareandtortoise, newWindow, 10, 70, 1200.0)
+			newWindow.Show()
+		}),
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.HelpIcon(), func() {
 			log.Println("Display help")
 		}),
+		widget.NewToolbarAction(theme.SettingsIcon(), func() {
+			settings.ShowSettingsWindow(hareandtortoise)
+		}),
+		widget.NewToolbarAction(theme.ContentClearIcon(), func() {
+			mainWindow.Close()
+		}),
 	)
 
-	buttons := container.NewHBox(raceTrackButton)
-	content := container.NewVBox(toolbar, buttons)
-	main := container.NewBorder(content, nil, ui.DisplayLeaderboard(), nil, nil)
-	//content := container.NewBorder(toolbar, nil, nil, nil,)
+	main := container.NewBorder(toolbar, nil, nil, nil, ui.DisplayLeaderboard())
 
 	mainWindow.SetContent(main)
 	mainWindow.Resize(fyne.NewSize(1000, 500))

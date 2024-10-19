@@ -34,10 +34,10 @@ func WriteCSV(filename string, data [][]string, appendMode bool) error {
 	return nil
 }
 
-func CreateAnimal () {
+func CreateAnimal (name string, minSpeed string, maxSpeed string) {
 	id := uuid.New().String()
-	data := [][]string{{"Name","0",id}}
-	err := WriteCSV("data/leaderboard.simulation", data, true)// true means append
+	data := [][]string{{name,"0",minSpeed,maxSpeed,id}}
+	err := WriteCSV("data/animal.simulation", data, true)// true means append
 	if err != nil {
 		fmt.Println("Error:", err)
 	}

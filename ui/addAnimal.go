@@ -1,16 +1,20 @@
 package ui
 
 import (
+	"hareandtortoise/v2/simulation"
 	"strconv"
 
 	"fyne.io/fyne/v2"
-//	"fyne.io/fyne/v2/app"
-//	"fyne.io/fyne/v2/container"
+
+	//	"fyne.io/fyne/v2/app"
+	//	"fyne.io/fyne/v2/container"
 
 	//	"fyne.io/fyne/v2/layout"
-//	"log"
+	//	"log"
 
-//	"fyne.io/fyne/v2/theme"
+	//	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -45,8 +49,17 @@ func (e *numericalEntry) TypedShortcut(shortcut fyne.Shortcut) {
 }
 
 func AddAnimal(hareandtortoise fyne.App, window fyne.Window) {
-	entry := newNumericalEntry()
-	window.SetContent(entry)
+	animalName := widget.NewEntry()
+	animalName.SetPlaceHolder("Animal name")
+	animalMinSpeed := newNumericalEntry()
+	animalMinSpeed.SetPlaceHolder("Minimum speed")
+	animalMaxSpeed := newNumericalEntry()
+	animalMaxSpeed.SetPlaceHolder("Maximum speed")
+	content := container.NewVBox(animalName, animalMinSpeed, animalMaxSpeed, widget.NewButtonWithIcon("Save", theme.ConfirmIcon(), func() {
+		simulation.CreateAnimal(animalName.Text, animalMinSpeed.Text, animalMaxSpeed.Text)
+		window.Hide()
+	}))	
+	window.SetContent(content)
 	window.Resize(fyne.NewSize(600,500))
 	window.CenterOnScreen()
 }
