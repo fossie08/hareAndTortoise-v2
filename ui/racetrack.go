@@ -1,12 +1,12 @@
 package ui
 
 import (
-//	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 	"image/color"
+	"time"
 )
 
 func DrawRaceTrack(myApp fyne.App, mainWindow fyne.Window, numLanes int, laneHeight int, windowWidth float32) {
@@ -51,9 +51,27 @@ func DrawRaceTrack(myApp fyne.App, mainWindow fyne.Window, numLanes int, laneHei
 	trackContainer.Add(startText)
 	trackContainer.Add(finishText)
 
+	// Add animals and animate them
+	for i := 0; i < numLanes; i++ {
+		animal := canvas.NewImageFromFile("data/image.png")
+		animal.Resize(fyne.NewSize(50, 50))                           // Resize animal image
+		initialPos := fyne.NewPos(0, float32(laneHeight*i+laneHeight/2)-25)
+		animal.Move(initialPos)
+		trackContainer.Add(animal)
+
+		// Animate the animal across the screen
+		go func(animal *canvas.Image, laneIndex int) {
+			for x := float32(0); x < windowWidth-50; x += 2 { // Move animal to the right
+				time.Sleep(20 * time.Millisecond) // Control speed
+				newPos := fyne.NewPos(x, float32(laneHeight*laneIndex+laneHeight/2)-25)
+				animal.Move(newPos)
+				canvas.Refresh(animal) // Refresh to update position
+			}
+		}(animal, i)
+	}
+
 	// Set the content of the window
 	mainWindow.SetContent(trackContainer)
 	mainWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight))) // Fixed window size
 	mainWindow.CenterOnScreen()
 }
-

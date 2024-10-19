@@ -9,6 +9,8 @@ import (
 	"fyne.io/fyne/v2/container"
 //	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"log"
+	"fyne.io/fyne/v2/theme"
 )
 
 func main() {
@@ -17,7 +19,7 @@ func main() {
 
 	raceTrackButton := widget.NewButton("Open racetrack", func() {
 		newWindow := hareandtortoise.NewWindow("Running Track")
-		ui.DrawRaceTrack(hareandtortoise, newWindow, 5, 70, 1000.0)
+		ui.DrawRaceTrack(hareandtortoise, newWindow, 10, 70, 1200.0)
 		newWindow.Show() // Not ShowAndRun, because ShowAndRun is only for the main window
 	})
 	
@@ -36,10 +38,23 @@ func main() {
 		simulation.CreateAnimal()
 	})
 
-	content := container.NewBorder(
-		container.NewHBox(raceTrackButton, leaderboardButton, newCharacterButton),
-		nil, nil, nil,
+	toolbar := widget.NewToolbar(
+		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
+			log.Println("New document")
+		}),
+		widget.NewToolbarSeparator(),
+		widget.NewToolbarAction(theme.ContentCutIcon(), func() {}),
+		widget.NewToolbarAction(theme.ContentCopyIcon(), func() {}),
+		widget.NewToolbarAction(theme.ContentPasteIcon(), func() {}),
+		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.HelpIcon(), func() {
+			log.Println("Display help")
+		}),
 	)
+
+	buttons := container.NewHBox(raceTrackButton, leaderboardButton, newCharacterButton)
+	content := container.NewVBox(toolbar, buttons)
+	//content := container.NewBorder(toolbar, nil, nil, nil,)
 
 	mainWindow.SetContent(content)
 	mainWindow.Resize(fyne.NewSize(1000, 500))

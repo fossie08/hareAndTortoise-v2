@@ -115,6 +115,6 @@ func DisplayLeaderboard(myApp fyne.App, window fyne.Window, players []Player) {
 	)
 
 	window.SetContent(content)
-	window.Resize(fyne.NewSize(400, 500)) // Adjust size as needed
+	window.Resize(fyne.NewSize(600, 500)) // Adjust size as needed
 	window.CenterOnScreen()
 }
