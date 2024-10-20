@@ -1,6 +1,9 @@
 package simulation
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -56,7 +59,18 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 	// Player icons representing players
 	playerImages := make([]*canvas.Image, len(players))
 	for i := 0; i < numLanes; i++ {
-		animal := canvas.NewImageFromFile("data/image.png")
+		// Construct file path for player's image based on UUID
+		uuid := players[i].UUID
+		imagePath := filepath.Join("data", fmt.Sprintf("%s.png", uuid))
+
+		// Check if the image file exists
+		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+			// If the image doesn't exist, use a default image
+			imagePath = "data/default.png" // Make sure to have a default image in case of missing files
+		}
+
+		// Load the player's image from file
+		animal := canvas.NewImageFromFile(imagePath)
 		animal.Resize(fyne.NewSize(50, 50))
 		initialPos := fyne.NewPos(0, float32(laneHeight*i+laneHeight/2)-25)
 		animal.Move(initialPos)
@@ -83,20 +97,27 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 				if !players[i].Finished {
 					// Random movement for each player within their speed range
 					players[i].Distance += RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
-
-					// Move the player image in the UI
+	
+					// Calculate player progress, ensuring it doesn't exceed the total window width
 					playerProgress := (players[i].Distance / float64(totalDistance)) * float64(windowWidth-50)
+					if playerProgress > float64(windowWidth-50) {
+						playerProgress = float64(windowWidth - 50) // Cap the progress to the finish line
+					}
+	
+					// Move the player image in the UI
 					newPos := fyne.NewPos(float32(playerProgress), float32(laneHeight*i+laneHeight/2)-25)
 					playerImages[i].Move(newPos)
 					canvas.Refresh(playerImages[i])
-
+	
 					// Check if the player has finished the race
 					if players[i].Distance >= float64(totalDistance) {
 						players[i].Finished = true
 						players[i].Place = currentPlace
 						currentPlace++
 						finishedPlayers++
-						playerImages[i].Move(fyne.NewPos(float32(totalDistance), float32(laneHeight*i+laneHeight/2)-25))
+	
+						// Set player position exactly at the finish line when they finish
+						playerImages[i].Move(fyne.NewPos(float32(windowWidth-50), float32(laneHeight*i+laneHeight/2)-25))
 						canvas.Refresh(playerImages[i])
 					}
 				}
@@ -104,6 +125,7 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 			time.Sleep(100 * time.Millisecond) // Control speed of simulation
 		}
 	}()
+	
 
 	// Set the content of the window
 	mainWindow.SetContent(trackContainer)
