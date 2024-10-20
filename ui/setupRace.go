@@ -56,7 +56,7 @@ func ShowSetupRaceMenu(app fyne.App) [][]string {
 			dialog.ShowInformation("Error", "Please enter a valid race length.", setupWindow)
 			return
 		}
-
+		var numberOfPlayers int = 0
 		// Create playerData in the specified format
 		playerData := [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
 		for _, player := range selectedAnimals {
@@ -67,15 +67,14 @@ func ShowSetupRaceMenu(app fyne.App) [][]string {
 				strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64),
 				player.UUID,
 			})
+			numberOfPlayers = numberOfPlayers + 1
 		}
 
 		fmt.Println("Race Length:", raceLengthEntry.Text)
 		fmt.Println("Selected Players:", playerData)
-		simulation.RunSimulation(playerData, raceLengthEntry.Text)
+		simulation.RunSimulation(app, numberOfPlayers, 70, 1000, playerData, raceLengthEntry.Text)
 		// Close the window
 		setupWindow.Close()
-
-		// Returning player data for further use
 	})
 
 	// Organize UI components

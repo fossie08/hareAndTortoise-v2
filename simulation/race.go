@@ -5,8 +5,10 @@ import (
 	"os"
 	"fmt"
 	"strconv"
-	"time"
+	//"time"
 	"math/rand"
+	//"hareandtortoise/v2/ui"
+	"fyne.io/fyne/v2"
 )
 
 // ReadCSV reads the CSV file and returns a slice of Players
@@ -76,7 +78,7 @@ func CreatePlayers(playerData [][]string) ([]Player, error) {
 	return players, nil
 }
 
-func RunSimulation(playerData [][]string, raceLengthEntry string) {
+func RunSimulation(app fyne.App, numberOfPlayers int, laneHeight int, windowWidth int, playerData [][]string, raceLengthEntry string) {
 	// Convert playerData to []Player
 	players, err := CreatePlayers(playerData[1:])
 	if err != nil {
@@ -92,9 +94,9 @@ func RunSimulation(playerData [][]string, raceLengthEntry string) {
 	}
 
 	// Start the race with the created players and parsed race length
-	StartRace(players, raceLength)
+	DrawRaceTrack(app, numberOfPlayers, laneHeight, float32(windowWidth),players, raceLength)
 }
-
+/*
 // Simulate the race with the given players
 func StartRace(players []Player, totalDistance int) {
 	rand.Seed(time.Now().UnixNano())
@@ -114,7 +116,7 @@ func StartRace(players []Player, totalDistance int) {
 		for i := range players {
 			if !players[i].Finished {
 				// Random movement for each player within their speed range
-				players[i].Distance += randomFloat(players[i].MinSpeed, players[i].MaxSpeed)
+				players[i].Distance += RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
 
 				// Check if the player has finished the race
 				if players[i].Distance >= float64(totalDistance) {
@@ -149,7 +151,7 @@ func StartRace(players []Player, totalDistance int) {
 		fmt.Printf("%d. %s\n", player.Place, player.Name)
 	}
 }
-
-func randomFloat(lowerLimit, upperLimit float64) float64 { 
+*/
+func RandomFloat(lowerLimit, upperLimit float64) float64 { 
     return lowerLimit + rand.Float64()*(upperLimit-lowerLimit)
 }

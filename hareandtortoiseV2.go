@@ -26,11 +26,13 @@ func main() {
 			ui.AddAnimal(hareandtortoise, addAnimalWindow)
 			addAnimalWindow.Show()
 		}),
+		/*
 		widget.NewToolbarAction(theme.WarningIcon(), func() {
 			newWindow := hareandtortoise.NewWindow("Running Track")
-			ui.DrawRaceTrack(hareandtortoise, newWindow, 10, 70, 1200.0)
+			ui.DrawRaceTrack(hareandtortoise, newWindow, 10 int, 70 int, 1200.0 float32)
 			newWindow.Show()
 		}),
+		*/
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.HelpIcon(), func() {
 			log.Println("Display help")
