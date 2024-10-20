@@ -1,14 +1,11 @@
 package main
 
 import (
-//	"fmt"
 	"hareandtortoise/v2/ui"
 	"hareandtortoise/v2/settings"
-//	"hareandtortoise/v2/simulation"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-//	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"log"
 	"fyne.io/fyne/v2/theme"
@@ -21,7 +18,7 @@ func main() {
 
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
-			log.Println("New race")
+			ui.ShowSetupRaceMenu(hareandtortoise)
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.AccountIcon(), func() {
@@ -53,15 +50,3 @@ func main() {
 	mainWindow.CenterOnScreen()
 	mainWindow.ShowAndRun()
 }
-/*
-func leaderboardWidget(hareandtortoise fyne.App) {
-	newWindow := hareandtortoise.NewWindow("Leaderboard")
-	players, err := ui.ReadCSV("data/leaderboard.simulation")
-	if err != nil {
-		fmt.Println("Error loading leaderboard:", err)
-		return
-	}
-	ui.DisplayLeaderboard(hareandtortoise, newWindow, players)
-	newWindow.Show()
-}
-*/
