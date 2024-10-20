@@ -20,19 +20,15 @@ func main() {
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
 			ui.ShowSetupRaceMenu(hareandtortoise)
 		}),
-		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.AccountIcon(), func() {
 			addAnimalWindow := hareandtortoise.NewWindow("Add animal")
 			ui.AddAnimal(hareandtortoise, addAnimalWindow)
 			addAnimalWindow.Show()
 		}),
-		/*
-		widget.NewToolbarAction(theme.WarningIcon(), func() {
-			newWindow := hareandtortoise.NewWindow("Running Track")
-			ui.DrawRaceTrack(hareandtortoise, newWindow, 10 int, 70 int, 1200.0 float32)
-			newWindow.Show()
+		widget.NewToolbarSeparator(),
+		widget.NewToolbarAction(theme.FileImageIcon(), func() {
+			settings.ImageSelection(hareandtortoise)
 		}),
-		*/
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.HelpIcon(), func() {
 			log.Println("Display help")

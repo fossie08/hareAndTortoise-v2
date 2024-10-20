@@ -96,6 +96,8 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 						players[i].Place = currentPlace
 						currentPlace++
 						finishedPlayers++
+						playerImages[i].Move(fyne.NewPos(float32(totalDistance), float32(laneHeight*i+laneHeight/2)-25))
+						canvas.Refresh(playerImages[i])
 					}
 				}
 			}
