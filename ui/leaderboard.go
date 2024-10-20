@@ -4,11 +4,12 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"strconv"
 	"sort"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -148,7 +149,7 @@ func DisplayLeaderboard() *fyne.Container {
 			}
 		},
 	)
-
+/*
 	editButton := widget.NewButton("Edit Player", func() {
 		playerNames := make([]string, len(players))
 		for i, player := range players {
@@ -177,7 +178,7 @@ func DisplayLeaderboard() *fyne.Container {
 		editWindow.Resize(fyne.NewSize(300, 200)) // Resize the window if needed
 		editWindow.Show()
 	})
-	
+	*/
 	// Sorting buttons
 	sortByScoreButton := widget.NewButton("Sort by Score", func() {
 		sort.Slice(players, func(i, j int) bool {
@@ -214,7 +215,7 @@ func DisplayLeaderboard() *fyne.Container {
 		}
 		UpdateLeaderboardContent(list, playerData) // Refresh the list with the updated playerData
 	})
-
+/*
 	// Refresh button
 	refreshButton := widget.NewButton("Refresh", func() {
 		players, err = ReadCSV("data/animal.simulation")
@@ -228,6 +229,50 @@ func DisplayLeaderboard() *fyne.Container {
 		}
 		list.Refresh() // Refresh the list with the updated playerData
 	})
+*/
+	toolbar := widget.NewToolbar(
+		widget.NewToolbarAction(theme.MediaReplayIcon(), func() {
+			players, err = ReadCSV("data/animal.simulation")
+			if err != nil {
+				fmt.Println("Error refreshing leaderboard:", err)
+				return
+			}
+			playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
+			for _, player := range players {
+				playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), strconv.FormatFloat(player.MinSpeed, 'g', -1, 64), strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64), player.UUID})
+			}
+			list.Refresh() // Refresh the list with the updated playerData
+		}),
+		widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {
+			playerNames := make([]string, len(players))
+			for i, player := range players {
+				playerNames[i] = player.Name
+			}
+		
+			// Create a dropdown to select a player
+			playerSelect := widget.NewSelect(playerNames, func(selected string) {
+				for i, player := range players {
+					if player.Name == selected {
+						ShowEmbeddedEditForm(list, &players[i], players, "data/animal.simulation", &playerData) // Pass the list and playerData by reference
+						break
+					}
+				}
+			})
+		
+			// Create a container for the dropdown
+			form := container.NewVBox(
+				widget.NewLabel("Select a Player to Edit:"),
+				playerSelect,
+			)
+		
+			// Create and show the edit window
+			editWindow := fyne.CurrentApp().NewWindow("Select Player")
+			editWindow.SetContent(form)
+			editWindow.Resize(fyne.NewSize(300, 200)) // Resize the window if needed
+			editWindow.Show()
+		}),
+		widget.NewToolbarSeparator(),
+	)
 
 	// Setting column widths
 	list.SetColumnWidth(0, 140)
@@ -238,16 +283,13 @@ func DisplayLeaderboard() *fyne.Container {
 
 	// Display list and sorting buttons
 	content := container.NewBorder(
-		container.NewHBox(refreshButton, editButton, sortByNameButton, sortByScoreButton, sortByUUIDButton),
+		container.NewHBox(toolbar, sortByNameButton, sortByScoreButton, sortByUUIDButton),
 		nil, nil, nil,
 		list,
 	)
 
 	return content
 }
-
-
-
 
 func SavePlayersToCSV(filename string, players []Player) error {
 	file, err := os.Create(filename)
