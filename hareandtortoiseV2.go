@@ -15,7 +15,6 @@ import (
 func main() {
 	hareandtortoise := app.New()
 	mainWindow := hareandtortoise.NewWindow("Animal Simulation")
-
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
 			ui.ShowSetupRaceMenu(hareandtortoise)
@@ -41,7 +40,13 @@ func main() {
 		}),
 	)
 
-	main := container.NewBorder(toolbar, nil, nil, nil, ui.DisplayLeaderboard())
+	tabs := container.NewAppTabs(
+		container.NewTabItemWithIcon("Leaderboard", theme.MenuIcon(), ui.DisplayLeaderboard()),
+		container.NewTabItemWithIcon("Races", theme.HistoryIcon(), widget.NewLabel("test")),	
+	)
+	tabs.SetTabLocation(container.TabLocationTop)
+
+	main := container.NewBorder(toolbar, nil, nil, nil, tabs)
 
 	mainWindow.SetContent(main)
 	mainWindow.Resize(fyne.NewSize(1000, 500))

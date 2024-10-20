@@ -111,6 +111,24 @@ func DisplayLeaderboard() (content *fyne.Container) {
 		}
 		UpdateLeaderboardContent(list, playerData) // Refresh the list with the updated playerData
 	})
+
+	refreshLeaderboard := func() {
+		players, err = ReadCSV("data/animal.simulation")
+		if err != nil {
+			fmt.Println("Error refreshing leaderboard:", err)
+			return
+		}
+		playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
+		for _, player := range players {
+			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), strconv.FormatFloat(player.MinSpeed, 'g', -1, 64), strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64), player.UUID})
+		}
+		UpdateLeaderboardContent(list, playerData)
+	}
+
+	// Refresh button
+	refreshButton := widget.NewButton("Refresh", func() {
+		refreshLeaderboard()
+	})
 	
 
 	//setting column widths
@@ -122,7 +140,7 @@ func DisplayLeaderboard() (content *fyne.Container) {
 
 	//display list and sorting buttons
 	content = container.NewBorder(
-		container.NewHBox(sortByScoreButton, sortByNameButton, sortByUUIDButton),
+		container.NewHBox(refreshButton, sortByScoreButton, sortByNameButton, sortByUUIDButton),
 		nil, nil, nil,
 		list,
 	)

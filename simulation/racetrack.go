@@ -3,7 +3,6 @@ package simulation
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -11,20 +10,50 @@ import (
 	"image/color"
 	"time"
 	"math/rand"
+	"sort"
 )
 
+// Function to display the race results in a list format
+func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Window) {
+	// Create a new window for race results
+	resultsWindow := app.NewWindow("Race Results")
+
+	
+	// Container for the list of results
+	resultsContainer := container.NewVBox()
+
+	// Sort players by their finishing place
+	sort.Slice(players, func(i, j int) bool {
+		return players[i].Place < players[j].Place
+	})
+
+	// Loop through sorted players and display their place and name
+	for _, player := range players {
+		if player.Finished {
+			// Add player's finishing place and name to the results list
+			result := fmt.Sprintf("Place: %d - %s", player.Place, player.Name)
+			resultLabel := canvas.NewText(result, theme.ForegroundColor())
+			resultsContainer.Add(resultLabel)
+		}
+	}
+
+	// Set and display the results window content
+	resultsWindow.SetContent(resultsContainer)
+	resultsWindow.Resize(fyne.NewSize(300, 400)) // Adjust size as needed
+	resultsWindow.CenterOnScreen()
+	resultsWindow.Show()
+}
+
+
+// Main race function
 func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth float32, players []Player, totalDistance int) {
-	// Create main window
 	mainWindow := myApp.NewWindow("Race Simulation")
 	trackContainer := container.NewWithoutLayout()
-
 	windowHeight := float32(numLanes) * float32(laneHeight)
 
-	// Alternate shades of green for lanes
-	lightGreen := color.RGBA{34, 139, 34, 255} // Lighter green
-	darkGreen := color.RGBA{0, 100, 0, 255}    // Darker green
+	lightGreen := color.RGBA{34, 139, 34, 255}
+	darkGreen := color.RGBA{0, 100, 0, 255}
 
-	// Draw lanes
 	for i := 0; i < numLanes; i++ {
 		laneColor := lightGreen
 		if i%2 == 1 {
@@ -36,13 +65,11 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 		trackContainer.Add(lane)
 	}
 
-	// Create track line at the middle of the lanes
 	trackLine := canvas.NewLine(theme.ForegroundColor())
 	trackLine.StrokeWidth = 5
 	trackLine.Resize(fyne.NewSize(float32(windowWidth), 5))
 	trackLine.Move(fyne.NewPos(0, float32(windowHeight)/2-2))
 
-	// Create Start and Finish labels
 	startText := canvas.NewText("Start", theme.ForegroundColor())
 	startText.TextSize = 24
 	startText.Move(fyne.NewPos(10, float32(windowHeight)/2-30))
@@ -51,25 +78,22 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 	finishText.TextSize = 24
 	finishText.Move(fyne.NewPos(float32(windowWidth)-100, float32(windowHeight)/2-30))
 
-	// Add elements to container
 	trackContainer.Add(trackLine)
 	trackContainer.Add(startText)
 	trackContainer.Add(finishText)
 
-	// Player icons representing players
 	playerImages := make([]*canvas.Image, len(players))
 	for i := 0; i < numLanes; i++ {
-		// Construct file path for player's image based on UUID
-		uuid := players[i].UUID
-		imagePath := filepath.Join("data", fmt.Sprintf("%s.png", uuid))
+		imagePath := fmt.Sprintf("data/%s.png", players[i].UUID)
 
-		// Check if the image file exists
+		// Check if the image exists, if not use default.png
 		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
-			// If the image doesn't exist, use a default image
-			imagePath = "data/default.png" // Make sure to have a default image in case of missing files
+			fmt.Printf("Image for %s not found, using default.png\n", players[i].Name)
+			imagePath = "data/default.png"
+		} else {
+			fmt.Printf("Using image for %s: %s\n", players[i].Name, imagePath)
 		}
 
-		// Load the player's image from file
 		animal := canvas.NewImageFromFile(imagePath)
 		animal.Resize(fyne.NewSize(50, 50))
 		initialPos := fyne.NewPos(0, float32(laneHeight*i+laneHeight/2)-25)
@@ -80,7 +104,6 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 
 	rand.Seed(time.Now().UnixNano())
 
-	// Reset each player's distance and status
 	for i := range players {
 		players[i].Distance = 0
 		players[i].Finished = false
@@ -88,46 +111,39 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 	}
 
 	finishedPlayers := 0
-	currentPlace := 1 // Tracks the finishing position
+	currentPlace := 1
 
-	// Race simulation loop using a goroutine
 	go func() {
 		for finishedPlayers < len(players) {
 			for i := range players {
 				if !players[i].Finished {
-					// Random movement for each player within their speed range
 					players[i].Distance += RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
-	
-					// Calculate player progress, ensuring it doesn't exceed the total window width
 					playerProgress := (players[i].Distance / float64(totalDistance)) * float64(windowWidth-50)
 					if playerProgress > float64(windowWidth-50) {
-						playerProgress = float64(windowWidth - 50) // Cap the progress to the finish line
+						playerProgress = float64(windowWidth - 50)
 					}
-	
-					// Move the player image in the UI
 					newPos := fyne.NewPos(float32(playerProgress), float32(laneHeight*i+laneHeight/2)-25)
 					playerImages[i].Move(newPos)
 					canvas.Refresh(playerImages[i])
-	
-					// Check if the player has finished the race
+
 					if players[i].Distance >= float64(totalDistance) {
 						players[i].Finished = true
 						players[i].Place = currentPlace
 						currentPlace++
 						finishedPlayers++
-	
-						// Set player position exactly at the finish line when they finish
 						playerImages[i].Move(fyne.NewPos(float32(windowWidth-50), float32(laneHeight*i+laneHeight/2)-25))
 						canvas.Refresh(playerImages[i])
 					}
 				}
 			}
-			time.Sleep(100 * time.Millisecond) // Control speed of simulation
+			time.Sleep(100 * time.Millisecond)
 		}
-	}()
-	
 
-	// Set the content of the window
+		// Once race finishes, show podium window
+		ShowRaceResultsWindow(myApp, players, mainWindow)
+		mainWindow.Close()
+	}()	
+
 	mainWindow.SetContent(trackContainer)
 	mainWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight)))
 	mainWindow.CenterOnScreen()
