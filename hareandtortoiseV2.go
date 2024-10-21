@@ -3,7 +3,6 @@ package main
 import (
 	"hareandtortoise/v2/settings"
 	"hareandtortoise/v2/ui"
-	"log"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -35,7 +34,7 @@ func main() {
 		}),
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.HelpIcon(), func() {
-			log.Println("Display help")
+			ui.ShowPreviousRacesWindow(hareandtortoise, mainWindow)
 		}),
 		widget.NewToolbarAction(theme.SettingsIcon(), func() {
 			settings.ShowSettingsWindow(hareandtortoise)

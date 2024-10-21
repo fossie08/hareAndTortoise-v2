@@ -38,15 +38,16 @@ func ReadCSV(filename string) ([]Player, error) {
 }
 
 type Player struct {
-	Name     string
-	Score    int
-	MinSpeed float64
-	MaxSpeed float64
-	UUID     string
-	Distance float64 // to track how far they've gone
-	Finished bool    // to track if the player has finished the race
-	Place    int     // to track the finishing position
+	Name      string
+	UUID      string
+	Distance  float64
+	MinSpeed  float64
+	MaxSpeed  float64
+	Place     int
+	Finished  bool
+	Score     int
 }
+
 
 // Convert playerData ([][]string) to []Player
 func CreatePlayers(playerData [][]string) ([]Player, error) {
@@ -71,6 +72,7 @@ func CreatePlayers(playerData [][]string) ([]Player, error) {
 			Distance: 0,
 			Finished: false,
 			Place:    0,
+			Score:    0,
 		}
 		players = append(players, player)
 	}
@@ -96,62 +98,7 @@ func RunSimulation(app fyne.App, numberOfPlayers int, laneHeight int, windowWidt
 	// Start the race with the created players and parsed race length
 	DrawRaceTrack(app, numberOfPlayers, laneHeight, float32(windowWidth),players, raceLength)
 }
-/*
-// Simulate the race with the given players
-func StartRace(players []Player, totalDistance int) {
-	rand.Seed(time.Now().UnixNano())
 
-	// Reset each player's distance and status
-	for i := range players {
-		players[i].Distance = 0
-		players[i].Finished = false
-		players[i].Place = 0
-	}
-
-	round := 1
-	finishedPlayers := 0
-	currentPlace := 1 // Tracks the finishing position
-
-	for finishedPlayers < len(players) {
-		for i := range players {
-			if !players[i].Finished {
-				// Random movement for each player within their speed range
-				players[i].Distance += RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
-
-				// Check if the player has finished the race
-				if players[i].Distance >= float64(totalDistance) {
-					players[i].Finished = true
-					players[i].Place = currentPlace
-					currentPlace++
-					finishedPlayers++
-				}
-			}
-		}
-
-		// Print the race progress to the console
-		fmt.Printf("Round %d\n", round)
-		for _, player := range players {
-			status := ""
-			if player.Finished {
-				status = fmt.Sprintf(" (Finished in place %d)", player.Place)
-			}
-			fmt.Printf("%s: %.2f m%s\n", player.Name, player.Distance, status)
-		}
-		fmt.Println()
-
-		time.Sleep(10 * time.Millisecond) // Pause to simulate time between rounds
-
-		round++
-	}
-
-	// Print the final results in order of placement
-	fmt.Println("Race Finished!")
-	fmt.Println("Final Placements:")
-	for _, player := range players {
-		fmt.Printf("%d. %s\n", player.Place, player.Name)
-	}
-}
-*/
 func RandomFloat(lowerLimit, upperLimit float64) float64 { 
     return lowerLimit + rand.Float64()*(upperLimit-lowerLimit)
 }

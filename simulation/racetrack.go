@@ -13,37 +13,59 @@ import (
 	"time"
 	"math/rand"
 	"sort"
+	"github.com/google/uuid"
+
 )
+
+
 
 var roundNumber int = 1
 var raceRunning bool = true
 
-// Function to display the race results in a list format
-func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Window) {
-	// Create a new window for race results
-	resultsWindow := app.NewWindow("Race Results")
+// Calculate scores based on race position, race distance, and number of players
+func CalculateScores(players []Player, totalDistance int) {
+	numPlayers := len(players)
+	basePoints := func(place int) int {
+		// Base points are higher for smaller races and decrease by position
+		return (numPlayers - place + 1) * 10 // Example: 1st place gets 10 * numPlayers points
+	}
+	for i, player := range players {
+		if player.Finished {
+			distanceBonus := float64(player.Distance) / float64(totalDistance) // Bonus based on distance
+			speedBonus := (player.MaxSpeed - player.MinSpeed) / 2               // Speed difference bonus
+			players[i].Score = basePoints(player.Place) + int(distanceBonus*100) + int(speedBonus*10)
+		}
+	}
+}
 
-	// Container for the list of results
+
+// Modify ShowRaceResultsWindow to include a "Save Race" button
+func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Window, totalDistance, numRounds int) {
+	resultsWindow := app.NewWindow("Race Results")
 	resultsContainer := container.NewVBox()
 
-	// Sort players by their finishing place
 	sort.Slice(players, func(i, j int) bool {
 		return players[i].Place < players[j].Place
 	})
 
-	// Loop through sorted players and display their place and name
-	for _, player := range players {
+	for i, player := range players {
 		if player.Finished {
-			// Add player's finishing place and name to the results list
-			result := fmt.Sprintf("Place: %d - %s", player.Place, player.Name)
+			result := fmt.Sprintf("Place: %d - %s - Score: %d", player.Place, player.Name, players[i].Score)
 			resultLabel := canvas.NewText(result, theme.ForegroundColor())
 			resultsContainer.Add(resultLabel)
 		}
 	}
 
-	// Set and display the results window content
+	// Add "Save Race" button
+	saveButton := widget.NewButton("Save Race", func() {
+		raceUUID := uuid.New().String()
+		SaveRaceResults(players, totalDistance, numRounds, raceUUID)
+		dialog.ShowInformation("Race Saved", "Race results have been saved successfully.", resultsWindow)
+	})
+	resultsContainer.Add(saveButton)
+
 	resultsWindow.SetContent(resultsContainer)
-	resultsWindow.Resize(fyne.NewSize(300, 400)) // Adjust size as needed
+	resultsWindow.Resize(fyne.NewSize(300, 400))
 	resultsWindow.CenterOnScreen()
 	resultsWindow.Show()
 }
@@ -192,8 +214,8 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 			time.Sleep(100 * time.Millisecond)
 		}
 
-		// Once race finishes, show podium window
-		ShowRaceResultsWindow(myApp, players, mainWindow)
+		CalculateScores(players, totalDistance)
+		ShowRaceResultsWindow(myApp, players, mainWindow, totalDistance, roundNumber)
 		mainWindow.Close()
 	}()
 
