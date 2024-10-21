@@ -4,36 +4,71 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"time"
 	"strconv"
+	"time"
 )
 
+// SavePlayersToCSV updates the relevant player data without overwriting the whole file
 func SavePlayersToCSV(filename string, players []Player) error {
-	file, err := os.Create(filename)
+	// Open the existing file for reading
+	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	writer := csv.NewWriter(file)
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll() // Read all records at once
+	if err != nil {
+		return err
+	}
+
+	// Create a map of players by UUID for quick lookup
+	playerMap := make(map[string]Player)
+	for _, player := range players {
+		playerMap[player.UUID] = player
+	}
+
+	// Modify only the relevant player records
+	for i, record := range records {
+		if i == 0 {
+			// Skip header row
+			continue
+		}
+
+		uuid := record[4] // Assuming UUID is the 5th column
+		if updatedPlayer, ok := playerMap[uuid]; ok {
+			// Replace the player's data with updated values
+			records[i] = []string{
+				updatedPlayer.Name,
+				strconv.Itoa(updatedPlayer.Score),
+				strconv.FormatFloat(updatedPlayer.MinSpeed, 'f', -1, 64),
+				strconv.FormatFloat(updatedPlayer.MaxSpeed, 'f', -1, 64),
+				updatedPlayer.UUID,
+			}
+		}
+	}
+
+	// Open the file for writing (overwrite)
+	outFile, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	writer := csv.NewWriter(outFile)
 	defer writer.Flush()
 
-	// Write header
-	writer.Write([]string{"Name", "Score", "Min Speed", "Max Speed", "UUID"})
-
-	// Write player data
-	for _, player := range players {
-		writer.Write([]string{
-			player.Name,
-			strconv.Itoa(player.Score),
-			strconv.FormatFloat(player.MinSpeed, 'f', -1, 64),
-			strconv.FormatFloat(player.MaxSpeed, 'f', -1, 64),
-			player.UUID,
-		})
+	// Write all records (including updated ones) back to the file
+	for _, record := range records {
+		if err := writer.Write(record); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
+
 
 // Save the race results to a CSV file, updating the existing score
 func SaveRaceResults(players []Player, totalDistance, numRounds int, uuid string) {

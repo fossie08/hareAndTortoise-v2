@@ -6,13 +6,6 @@ import (
 
 	"fyne.io/fyne/v2"
 
-	//	"fyne.io/fyne/v2/app"
-	//	"fyne.io/fyne/v2/container"
-
-	//	"fyne.io/fyne/v2/layout"
-	//	"log"
-
-	//	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -55,11 +48,21 @@ func AddAnimal(hareandtortoise fyne.App, window fyne.Window) {
 	animalMinSpeed.SetPlaceHolder("Minimum speed")
 	animalMaxSpeed := newNumericalEntry()
 	animalMaxSpeed.SetPlaceHolder("Maximum speed")
+	
 	content := container.NewVBox(animalName, animalMinSpeed, animalMaxSpeed, widget.NewButtonWithIcon("Save", theme.ConfirmIcon(), func() {
-		simulation.CreateAnimal(animalName.Text, animalMinSpeed.Text, animalMaxSpeed.Text)
+		minSpeed, _ := strconv.ParseFloat(animalMinSpeed.Text, 64)
+		maxSpeed, _ := strconv.ParseFloat(animalMaxSpeed.Text, 64)
+
+		// Check if minSpeed is greater than maxSpeed and swap if necessary
+		if minSpeed > maxSpeed {
+			minSpeed, maxSpeed = maxSpeed, minSpeed
+		}
+
+		// Convert back to string for saving
+		simulation.CreateAnimal(animalName.Text, strconv.FormatFloat(minSpeed, 'f', -1, 64), strconv.FormatFloat(maxSpeed, 'f', -1, 64))
 		window.Hide()
 	}))	
 	window.SetContent(content)
-	window.Resize(fyne.NewSize(600,500))
+	window.Resize(fyne.NewSize(300, 250))
 	window.CenterOnScreen()
 }

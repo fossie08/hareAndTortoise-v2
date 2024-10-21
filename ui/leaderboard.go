@@ -86,8 +86,16 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 	// Save button
 	saveButton := widget.NewButton("Save", func() {
 		player.Name = nameEntry.Text
-		player.MinSpeed, _ = strconv.ParseFloat(minSpeedEntry.Text, 64)
-		player.MaxSpeed, _ = strconv.ParseFloat(maxSpeedEntry.Text, 64)
+		minSpeed, _ := strconv.ParseFloat(minSpeedEntry.Text, 64)
+		maxSpeed, _ := strconv.ParseFloat(maxSpeedEntry.Text, 64)
+
+		// Check if minSpeed is greater than maxSpeed and swap if necessary
+		if minSpeed > maxSpeed {
+			minSpeed, maxSpeed = maxSpeed, minSpeed
+		}
+
+		player.MinSpeed = minSpeed
+		player.MaxSpeed = maxSpeed
 
 		// Save the changes back to the CSV file
 		if err := SavePlayersToCSV(filename, players); err != nil {
@@ -147,7 +155,6 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 	formWindow.CenterOnScreen()
 	formWindow.Show()
 }
-
 
 // UpdateLeaderboardContent dynamically updates the table with new data
 func UpdateLeaderboardContent(list *widget.Table, playerData [][]string) {
