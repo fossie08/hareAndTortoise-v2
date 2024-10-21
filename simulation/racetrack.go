@@ -6,19 +6,23 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/dialog"
 	"image/color"
 	"time"
 	"math/rand"
 	"sort"
 )
 
+var roundNumber int = 1
+var raceRunning bool = true
+
 // Function to display the race results in a list format
 func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Window) {
 	// Create a new window for race results
 	resultsWindow := app.NewWindow("Race Results")
 
-	
 	// Container for the list of results
 	resultsContainer := container.NewVBox()
 
@@ -44,15 +48,21 @@ func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Windo
 	resultsWindow.Show()
 }
 
-
 // Main race function
 func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth float32, players []Player, totalDistance int) {
 	mainWindow := myApp.NewWindow("Race Simulation")
 	trackContainer := container.NewWithoutLayout()
 	windowHeight := float32(numLanes) * float32(laneHeight)
 
+	// Display round number
+	roundText := canvas.NewText(fmt.Sprintf("Round: %d", roundNumber), theme.ForegroundColor())
+	roundText.TextSize = 24
+	roundText.Move(fyne.NewPos(windowWidth/2-50, 10))
+
 	lightGreen := color.RGBA{34, 139, 34, 255}
 	darkGreen := color.RGBA{0, 100, 0, 255}
+
+	playerProgressTexts := make([]*canvas.Text, len(players)) // Create array for progress text
 
 	for i := 0; i < numLanes; i++ {
 		laneColor := lightGreen
@@ -63,6 +73,19 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 		lane.Resize(fyne.NewSize(float32(windowWidth), float32(laneHeight)))
 		lane.Move(fyne.NewPos(0, float32(laneHeight)*float32(i)))
 		trackContainer.Add(lane)
+
+		// Display player names and distance travelled at the beginning of lanes
+		playerNameText := canvas.NewText(players[i].Name, theme.ForegroundColor())
+		playerNameText.TextSize = 18
+		playerNameText.Move(fyne.NewPos(10, float32(laneHeight*i)+5))
+		trackContainer.Add(playerNameText)
+
+		// Distance text
+		progressText := canvas.NewText(fmt.Sprintf("0.0/%d", totalDistance), theme.ForegroundColor())
+		progressText.TextSize = 18
+		progressText.Move(fyne.NewPos(150, float32(laneHeight*i)+5))
+		playerProgressTexts[i] = progressText
+		trackContainer.Add(progressText)
 	}
 
 	trackLine := canvas.NewLine(theme.ForegroundColor())
@@ -113,26 +136,56 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 	finishedPlayers := 0
 	currentPlace := 1
 
+	// Add start, stop, and end buttons
+	startButton := widget.NewButton("Start Race", func() {
+		raceRunning = true
+	})
+	stopButton := widget.NewButton("Pause Race", func() {
+		raceRunning = false
+	})
+	endButton := widget.NewButton("End Race", func() {
+		dialog.NewConfirm("Are you sure?", "Are you sure you want to end the race?", 
+		func(confirmed bool) {
+			if confirmed {
+				finishedPlayers = len(players)
+				mainWindow.Close()
+			}
+		}, mainWindow).Show()
+	})
+
+	buttonContainer := container.NewHBox(startButton, stopButton, endButton, roundText)
+	layout := container.NewVBox(buttonContainer, trackContainer)
+
 	go func() {
 		for finishedPlayers < len(players) {
-			for i := range players {
-				if !players[i].Finished {
-					players[i].Distance += RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
-					playerProgress := (players[i].Distance / float64(totalDistance)) * float64(windowWidth-50)
-					if playerProgress > float64(windowWidth-50) {
-						playerProgress = float64(windowWidth - 50)
-					}
-					newPos := fyne.NewPos(float32(playerProgress), float32(laneHeight*i+laneHeight/2)-25)
-					playerImages[i].Move(newPos)
-					canvas.Refresh(playerImages[i])
+			if raceRunning {
+				roundNumber++ // Increment round number
+				roundText.Text = fmt.Sprintf("Round: %d", roundNumber) // Update round number display
+				canvas.Refresh(roundText)
 
-					if players[i].Distance >= float64(totalDistance) {
-						players[i].Finished = true
-						players[i].Place = currentPlace
-						currentPlace++
-						finishedPlayers++
-						playerImages[i].Move(fyne.NewPos(float32(windowWidth-50), float32(laneHeight*i+laneHeight/2)-25))
+				for i := range players {
+					if !players[i].Finished {
+						players[i].Distance += RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
+						playerProgress := (players[i].Distance / float64(totalDistance)) * float64(windowWidth-50)
+						if playerProgress > float64(windowWidth-50) {
+							playerProgress = float64(windowWidth - 50)
+						}
+						newPos := fyne.NewPos(float32(playerProgress), float32(laneHeight*i+laneHeight/2)-25)
+						playerImages[i].Move(newPos)
 						canvas.Refresh(playerImages[i])
+
+						// Update distance travelled text
+						playerProgressTexts[i].Text = fmt.Sprintf("%.1f/%d", players[i].Distance, totalDistance)
+						canvas.Refresh(playerProgressTexts[i])
+
+						if players[i].Distance >= float64(totalDistance) {
+							players[i].Finished = true
+							players[i].Place = currentPlace
+							currentPlace++
+							finishedPlayers++
+							playerImages[i].Move(fyne.NewPos(float32(windowWidth-50), float32(laneHeight*i+laneHeight/2)-25))
+							canvas.Refresh(playerImages[i])
+						}
 					}
 				}
 			}
@@ -142,10 +195,10 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 		// Once race finishes, show podium window
 		ShowRaceResultsWindow(myApp, players, mainWindow)
 		mainWindow.Close()
-	}()	
+	}()
 
-	mainWindow.SetContent(trackContainer)
-	mainWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight)))
+	mainWindow.SetContent(layout)
+	mainWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight+100))) // Adjust window size
 	mainWindow.CenterOnScreen()
 	mainWindow.Show()
 }
