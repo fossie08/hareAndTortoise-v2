@@ -1,132 +1,238 @@
 package ui
 
 import (
-	"encoding/csv"
+    "bufio"
+    "encoding/csv"
+    "errors"
+    "fyne.io/fyne/v2"
+    "fyne.io/fyne/v2/container"
+    "fyne.io/fyne/v2/dialog"
+    "fyne.io/fyne/v2/widget"
+    "os"
+    "path/filepath"
+    "strconv"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
-	"fyne.io/fyne/v2/dialog"
+    "strings"
 )
 
-// Struct to hold participant details
-type ParticipantDetails struct {
-	UUID     string
-	Place    string
-	Distance string
-	Score    string
+type Race struct {
+    UUID               string
+    Place              int
+    DistanceTravelled  float64
+    Score              int
+    TotalDistance      float64
+    Rounds             int
+    Date               string
+    Time               string
 }
 
-// Struct to hold overall race details
-type RaceDetails struct {
-	UUID          string
-	TotalDistance string
-	Rounds        string
-	Date          string
-	Time          string
-	Participants  []ParticipantDetails
+type Animal struct {
+    Name string
+    UUID string
 }
 
-
-// Function to load all .simulation files from data/ and display in a window
-func ShowPreviousRacesWindow(app fyne.App, mainWindow fyne.Window) {
-	// Create a new window for showing previous races
-	previousRacesWindow := app.NewWindow("Previous Races")
-
-	// Container for the list of races
-	raceContainer := container.NewVBox()
-
-	// Read all .simulation files from the data folder
-	files, err := ioutil.ReadDir("data/")
-	if err != nil {
-		dialog.ShowError(err, mainWindow)
-		return
-	}
-
-	// Loop through files and load race details
-	for _, file := range files {
-		if strings.HasSuffix(file.Name(), ".simulation") {
-			raceDetails, err := LoadRaceDetails("data/" + file.Name())
-			if err != nil {
-				fmt.Println("Failed to load race details:", err)
-				continue
-			}
-
-			// Display the race details in the UI
-			raceLabel := fmt.Sprintf("UUID: %s | Date: %s | Rounds: %s | Total Distance: %s", raceDetails.UUID, raceDetails.Date, raceDetails.Rounds, raceDetails.TotalDistance)
-			raceContainer.Add(widget.NewLabel(raceLabel))
-
-			// Display the participants and their positions
-			for _, participant := range raceDetails.Participants {
-				participantLabel := fmt.Sprintf("Place: %s | Name: %s", participant.Place, participant.UUID)
-				raceContainer.Add(widget.NewLabel(participantLabel))
-			}
-
-			// Add a separator for each race
-			raceContainer.Add(widget.NewSeparator())
-		}
-	}
-
-	// Set the content of the window and show it
-	previousRacesWindow.SetContent(raceContainer)
-	previousRacesWindow.Resize(fyne.NewSize(500, 400)) // Adjust window size as needed
-	previousRacesWindow.CenterOnScreen()
-	previousRacesWindow.Show()
+type AnimalInsights struct {
+    TotalScore         int
+    RacesParticipated  int
+    BestPlace          int
+    RaceData           []Race
+    Last10Positions    []int
 }
 
-func LoadRaceDetails(filePath string) (RaceDetails, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return RaceDetails{}, err
-	}
-	defer file.Close()
+// ReadRaceFiles reads all .simulation files in the data/ directory.
+func ReadRaceFiles() (map[string][]Race, error) {
+    raceMap := make(map[string][]Race)
 
-	reader := csv.NewReader(file)
-	headers, err := reader.Read() // Read the first line as headers
-	if err != nil {
-		return RaceDetails{}, err
-	}
+    err := filepath.Walk("data/", func(path string, info os.FileInfo, err error) error {
+        if err != nil {
+            return err
+        }
 
-	// Ensure the headers have at least 8 fields
-	if len(headers) < 8 {
-		return RaceDetails{}, fmt.Errorf("invalid header structure")
-	}
+        // Ignore .png files and animal.simulation
+        if strings.HasSuffix(info.Name(), ".png") || info.Name() == "animal.simulation" {
+            return nil
+        }
 
-	// Collect race details
-	raceDetails := RaceDetails{
-		UUID:          headers[0], // Assuming the file name contains UUID, but using the first column as UUID
-		TotalDistance: headers[4],
-		Rounds:        headers[5],
-		Date:          headers[6],
-		Time:          headers[7],
-	}
+        if strings.HasSuffix(info.Name(), ".simulation") {
+            races, err := parseRaceFile(path)
+            if err != nil {
+                return err
+            }
+            raceUUID := strings.TrimSuffix(info.Name(), ".simulation")
+            raceMap[raceUUID] = races
+        }
+        return nil
+    })
 
-	var participants []ParticipantDetails
-	for {
-		record, err := reader.Read()
+    if err != nil {
+        return nil, err
+    }
+
+    return raceMap, nil
+}
+
+// parseRaceFile parses a .simulation file and returns race data.
+func parseRaceFile(filename string) ([]Race, error) {
+    file, err := os.Open(filename)
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
+
+    reader := csv.NewReader(bufio.NewReader(file))
+    records, err := reader.ReadAll()
+    if err != nil {
+        return nil, err
+    }
+
+    if len(records) < 2 {
+        return nil, errors.New("no race data found")
+    }
+
+    var races []Race
+    generalData := records[0] // General data is in the first row
+
+    for _, record := range records[1:] {
+        if len(record) != 8 { // Ensure the record has the correct number of fields
+            continue // Skip malformed records
+        }
+
+        place, _ := strconv.Atoi(record[1])
+        distanceTravelled, _ := strconv.ParseFloat(record[2], 64)
+        score, _ := strconv.Atoi(record[3])
+        totalDistance, _ := strconv.ParseFloat(record[4], 64)
+        rounds, _ := strconv.Atoi(record[5])
+
+        races = append(races, Race{
+            UUID:              record[0],
+            Place:             place,
+            DistanceTravelled: distanceTravelled,
+            Score:             score,
+            TotalDistance:     totalDistance,
+            Rounds:            rounds,
+            Date:              generalData[6], // Extracting date from the first row
+            Time:              generalData[7], // Extracting time from the first row
+        })
+    }
+
+    return races, nil
+}
+
+// ReadAnimalData reads the animal data from animal.simulation.
+func ReadAnimalData() (map[string]Animal, error) {
+    animalMap := make(map[string]Animal)
+
+    file, err := os.Open("data/animal.simulation")
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
+
+    reader := csv.NewReader(bufio.NewReader(file))
+    records, err := reader.ReadAll()
+    if err != nil {
+        return nil, err
+    }
+
+    for _, record := range records[1:] {
+        if len(record) < 2 {
+            continue // Skip malformed records
+        }
+        animalUUID := record[4]
+        animalName := record[0]
+        animalMap[animalUUID] = Animal{
+            Name: animalName,
+            UUID: animalUUID,
+        }
+    }
+
+    return animalMap, nil
+}
+
+// SearchAnimalInsights provides insights for a specific animal UUID or name.
+func SearchAnimalInsights(raceData map[string][]Race, animalID string, animalMap map[string]Animal) (AnimalInsights, error) {
+    var insights AnimalInsights
+    var foundAnimal bool
+
+    for _, races := range raceData {
+        for _, race := range races {
+            if race.UUID == animalID {
+                foundAnimal = true
+                insights.TotalScore += race.Score
+                insights.RacesParticipated++
+                insights.Last10Positions = append(insights.Last10Positions, race.Place)
+                if insights.BestPlace == 0 || race.Place < insights.BestPlace {
+                    insights.BestPlace = race.Place
+                }
+                insights.RaceData = append(insights.RaceData, race)
+            }
+        }
+    }
+
+    if !foundAnimal {
+        // If searching by name, look up the UUID first
+        for _, animal := range animalMap {
+            if animal.Name == animalID {
+                return SearchAnimalInsights(raceData, animal.UUID, animalMap)
+            }
+        }
+        return insights, errors.New("animal not found")
+    }
+
+    return insights, nil
+}
+
+func SearchAnimals(myWindow fyne.Window) *fyne.Container {
+
+    // Create a search entry
+    searchEntry := widget.NewEntry()
+    searchEntry.SetPlaceHolder("Enter Animal Name...")
+
+    // Create a label for results
+    resultsLabel := widget.NewLabel("Results will appear here.")
+
+    // Create a button to trigger the search
+    searchButton := widget.NewButton("Search", func() {
+        animalID := searchEntry.Text
+        animalMap, err := ReadAnimalData()
+        if err != nil {
+            dialog.ShowError(err, myWindow)
+            return
+        }
+		uuid, err := GetAnimalUUID(animalMap, animalID)
 		if err != nil {
-			break // End of file
+			dialog.ShowError(err, myWindow)
+		} else {
+			raceData, err := ReadRaceFiles()
+			if err != nil {
+				dialog.ShowError(err, myWindow)
+				return
+			}
+	
+			insights, err := SearchAnimalInsights(raceData, uuid, animalMap)
+			if err != nil {
+				dialog.ShowError(err, myWindow)
+				return
+			}
+	
+			// Show results in the same window
+			results := fmt.Sprintf("Total Score: %d\nRaces Participated: %d\nBest Place: %d\nLast 10 Positions: %v", 
+				insights.TotalScore, insights.RacesParticipated, insights.BestPlace, insights.Last10Positions)
+			resultsLabel.SetText(results)
 		}
+    })
 
-		// Ensure the record has at least 4 fields for participants (UUID, Place, Distance, Score)
-		if len(record) < 4 {
-			continue
-		}
-
-		// Collect participant data
-		participant := ParticipantDetails{
-			UUID:     record[0],
-			Place:    record[1],
-			Distance: record[2],
-			Score:    record[3],
-		}
-		participants = append(participants, participant)
-	}
-
-	raceDetails.Participants = participants
-	return raceDetails, nil
+    // Layout the search bar, button, and results label
+    content := container.NewVBox(searchEntry, searchButton, resultsLabel)
+	return content
 }
 
+// GetAnimalUUID returns the UUID for a given animal name from the animal map.
+func GetAnimalUUID(animalMap map[string]Animal, animalName string) (string, error) {
+    for _, animal := range animalMap {
+        if animal.Name == animalName {
+            return animal.UUID, nil
+        }
+    }
+    return "", errors.New("animal not found")
+}

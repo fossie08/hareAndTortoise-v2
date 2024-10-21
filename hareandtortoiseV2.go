@@ -34,7 +34,7 @@ func main() {
 		}),
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.HelpIcon(), func() {
-			ui.ShowPreviousRacesWindow(hareandtortoise, mainWindow)
+			
 		}),
 		widget.NewToolbarAction(theme.SettingsIcon(), func() {
 			settings.ShowSettingsWindow(hareandtortoise)
@@ -47,7 +47,7 @@ func main() {
 	// Tab setup
 	tabs := container.NewAppTabs(
 		container.NewTabItemWithIcon("Leaderboard", theme.MenuIcon(), ui.DisplayLeaderboard()),
-		container.NewTabItemWithIcon("Races", theme.HistoryIcon(), widget.NewLabel("test")),
+		container.NewTabItemWithIcon("Races", theme.HistoryIcon(), ui.SearchAnimals(mainWindow)),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
