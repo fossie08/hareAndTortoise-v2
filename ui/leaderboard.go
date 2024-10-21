@@ -83,6 +83,7 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 	maxSpeedEntry := widget.NewEntry()
 	maxSpeedEntry.SetText(strconv.FormatFloat(player.MaxSpeed, 'f', -1, 64))
 
+	// Save button
 	saveButton := widget.NewButton("Save", func() {
 		player.Name = nameEntry.Text
 		player.MinSpeed, _ = strconv.ParseFloat(minSpeedEntry.Text, 64)
@@ -103,6 +104,31 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 		formWindow.Close()
 	})
 
+	// Delete button
+	deleteButton := widget.NewButton("Delete", func() {
+		// Find and remove the player from the slice
+		for i, p := range players {
+			if p.UUID == player.UUID {
+				players = append(players[:i], players[i+1:]...) // Remove the player from the slice
+				break
+			}
+		}
+
+		// Save the updated list back to the CSV file
+		if err := SavePlayersToCSV(filename, players); err != nil {
+			fmt.Println("Error saving to CSV after delete:", err)
+		}
+
+		// Refresh the playerData after deletion
+		*playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
+		for _, p := range players {
+			*playerData = append(*playerData, []string{p.Name, strconv.Itoa(p.Score), strconv.FormatFloat(p.MinSpeed, 'g', -1, 64), strconv.FormatFloat(p.MaxSpeed, 'g', -1, 64), p.UUID})
+		}
+
+		list.Refresh() // Refresh the list with the updated playerData
+		formWindow.Close()
+	})
+
 	// Create the edit form
 	editForm := container.NewVBox(
 		widget.NewLabel("Edit Player Details"),
@@ -112,14 +138,16 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 			widget.NewFormItem("Max Speed", maxSpeedEntry),
 		),
 		saveButton,
+		deleteButton,
 	)
 
 	// Create a pop-up window or panel in your main UI to display the form
-	// Since you cannot replace the table content, you should add this form to a new container in your UI
 	formWindow.SetContent(editForm)
 	formWindow.Resize(fyne.NewSize(300, 200))
+	formWindow.CenterOnScreen()
 	formWindow.Show()
 }
+
 
 // UpdateLeaderboardContent dynamically updates the table with new data
 func UpdateLeaderboardContent(list *widget.Table, playerData [][]string) {
@@ -149,36 +177,7 @@ func DisplayLeaderboard() *fyne.Container {
 			}
 		},
 	)
-/*
-	editButton := widget.NewButton("Edit Player", func() {
-		playerNames := make([]string, len(players))
-		for i, player := range players {
-			playerNames[i] = player.Name
-		}
-	
-		// Create a dropdown to select a player
-		playerSelect := widget.NewSelect(playerNames, func(selected string) {
-			for i, player := range players {
-				if player.Name == selected {
-					ShowEmbeddedEditForm(list, &players[i], players, "data/animal.simulation", &playerData) // Pass the list and playerData by reference
-					break
-				}
-			}
-		})
-	
-		// Create a container for the dropdown
-		form := container.NewVBox(
-			widget.NewLabel("Select a Player to Edit:"),
-			playerSelect,
-		)
-	
-		// Create and show the edit window
-		editWindow := fyne.CurrentApp().NewWindow("Select Player")
-		editWindow.SetContent(form)
-		editWindow.Resize(fyne.NewSize(300, 200)) // Resize the window if needed
-		editWindow.Show()
-	})
-	*/
+
 	// Sorting buttons
 	sortByScoreButton := widget.NewButton("Sort by Score", func() {
 		sort.Slice(players, func(i, j int) bool {
@@ -215,21 +214,7 @@ func DisplayLeaderboard() *fyne.Container {
 		}
 		UpdateLeaderboardContent(list, playerData) // Refresh the list with the updated playerData
 	})
-/*
-	// Refresh button
-	refreshButton := widget.NewButton("Refresh", func() {
-		players, err = ReadCSV("data/animal.simulation")
-		if err != nil {
-			fmt.Println("Error refreshing leaderboard:", err)
-			return
-		}
-		playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
-		for _, player := range players {
-			playerData = append(playerData, []string{player.Name, strconv.Itoa(player.Score), strconv.FormatFloat(player.MinSpeed, 'g', -1, 64), strconv.FormatFloat(player.MaxSpeed, 'g', -1, 64), player.UUID})
-		}
-		list.Refresh() // Refresh the list with the updated playerData
-	})
-*/
+
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.MediaReplayIcon(), func() {
 			players, err = ReadCSV("data/animal.simulation")
