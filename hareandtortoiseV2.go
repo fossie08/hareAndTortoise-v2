@@ -1,20 +1,25 @@
 package main
 
 import (
-	"hareandtortoise/v2/ui"
 	"hareandtortoise/v2/settings"
-	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
+	"hareandtortoise/v2/ui"
 	"log"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 )
 
-
 func main() {
+	// Create the app
 	hareandtortoise := app.New()
 	mainWindow := hareandtortoise.NewWindow("Animal Simulation")
+
+	// Run the filesystem check before loading anything else
+	settings.CheckAndCreateFolderAndFile(mainWindow)
+
+	// Toolbar setup
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
 			ui.ShowSetupRaceMenu(hareandtortoise)
@@ -40,14 +45,17 @@ func main() {
 		}),
 	)
 
+	// Tab setup
 	tabs := container.NewAppTabs(
 		container.NewTabItemWithIcon("Leaderboard", theme.MenuIcon(), ui.DisplayLeaderboard()),
-		container.NewTabItemWithIcon("Races", theme.HistoryIcon(), widget.NewLabel("test")),	
+		container.NewTabItemWithIcon("Races", theme.HistoryIcon(), widget.NewLabel("test")),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
+	// Main container
 	main := container.NewBorder(toolbar, nil, nil, nil, tabs)
 
+	// Set up the window and display
 	mainWindow.SetContent(main)
 	mainWindow.Resize(fyne.NewSize(1000, 500))
 	mainWindow.CenterOnScreen()

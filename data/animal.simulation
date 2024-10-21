@@ -1,10 +1,7 @@
 Name,Score,Min Speed,Max Speed,UUID
-Bob,0,1,5,ce749bc7-acd4-463b-9f56-edcb04f695e6
 Fred,0,5.1,8.7,afd6e5bc-0587-4a48-978c-40454ba28cf1
 Hare,0,5,8,3045ba8c-10e7-4bf9-a560-1229763d2ec3
-Horse,0,1,5,7f784eda-2327-4788-b3e3-ec1a864a5b7c
 Jill,0,5.6,1.2,6582d4cd-1a13-40d7-a3e2-c931a0ad05d8
 John,0,4,8,f82434a3-c5b0-4425-b56d-f13b4bc4a14d
 Monty,0,1.1,8.8,9c87b822-9d5f-45a3-8ffd-49be50ca9d2b
-Tazmanian Devil ha,0,1,1,844a4839-ef34-490f-8615-70ac0a1ed660
-Tiger,0,1,5,dfb5482e-32f6-481d-a4b8-9fd9cae08ae4
+Tazmanian Devil,0,1,20,844a4839-ef34-490f-8615-70ac0a1ed660
