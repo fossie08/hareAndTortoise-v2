@@ -2,7 +2,6 @@ package ui
 
 import (
 	"encoding/csv"
-	"fmt"
 	"os"
 	"sort"
 	"strconv"
@@ -99,7 +98,6 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 
 		// Save the changes back to the CSV file
 		if err := SavePlayersToCSV(filename, players); err != nil {
-			fmt.Println("Error saving to CSV:", err)
 		}
 
 		// Refresh the playerData after saving
@@ -124,7 +122,6 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 
 		// Save the updated list back to the CSV file
 		if err := SavePlayersToCSV(filename, players); err != nil {
-			fmt.Println("Error saving to CSV after delete:", err)
 		}
 
 		// Refresh the playerData after deletion
@@ -165,7 +162,6 @@ func DisplayLeaderboard() *fyne.Container {
 	playerData := [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
 	players, err := ReadCSV("data/animal.simulation")
 	if err != nil {
-		fmt.Println("Error loading leaderboard:", err)
 		return nil
 	}
 
@@ -226,7 +222,6 @@ func DisplayLeaderboard() *fyne.Container {
 		widget.NewToolbarAction(theme.MediaReplayIcon(), func() {
 			players, err = ReadCSV("data/animal.simulation")
 			if err != nil {
-				fmt.Println("Error refreshing leaderboard:", err)
 				return
 			}
 			playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row

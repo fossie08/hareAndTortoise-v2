@@ -27,7 +27,6 @@ func ReadCSV(filename string) ([]Player, error) {
 
 	var players []Player
 	for _, record := range records[1:] { // Skipping the header in the CSV file
-		fmt.Println("Processing record:", record) // Debugging line to check each record
 		score, _ := strconv.Atoi(record[1]) // Convert score from string to int
 		minSpeed, _ := strconv.ParseFloat(record[2], 64)
 		maxSpeed, _ := strconv.ParseFloat(record[3], 64)
@@ -87,14 +86,12 @@ func RunSimulation(app fyne.App, numberOfPlayers int, laneHeight int, windowWidt
 	// Convert playerData to []Player
 	players, err := CreatePlayers(playerData[1:])
 	if err != nil {
-		fmt.Println("Error creating players:", err)
 		return
 	}
 
 	// Convert race length from string to int, and handle any potential error
 	raceLength, err := strconv.Atoi(raceLengthEntry)
 	if err != nil {
-		fmt.Println("Invalid race length:", err)
 		return
 	}
 
