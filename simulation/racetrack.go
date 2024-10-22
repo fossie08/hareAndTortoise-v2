@@ -19,7 +19,6 @@ import (
 
 
 
-var roundNumber int = 1
 var raceRunning bool = true
 
 // Calculate scores based on race position, race distance, and number of players
@@ -70,157 +69,168 @@ func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Windo
 	resultsWindow.Show()
 }
 
-// Main race function
 func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth float32, players []Player, totalDistance int) {
-	mainWindow := myApp.NewWindow("Race Simulation")
-	trackContainer := container.NewWithoutLayout()
-	windowHeight := float32(numLanes) * float32(laneHeight)
+    mainWindow := myApp.NewWindow("Race Simulation")
+	var roundNumber int = 1
+    trackContainer := container.NewWithoutLayout()
+    windowHeight := float32(numLanes) * float32(laneHeight)
 
-	// Display round number
-	roundText := canvas.NewText(fmt.Sprintf("Round: %d", roundNumber), theme.ForegroundColor())
-	roundText.TextSize = 24
-	roundText.Move(fyne.NewPos(windowWidth/2-50, 10))
+    // Initialize endurance for each player (endurance starts full)
+    for i := range players {
+        players[i].Endurance = 100 // Example starting endurance, could be different depending on player
+        players[i].Resting = false // Not resting at start
+    }
 
-	lightGreen := color.RGBA{34, 139, 34, 255}
-	darkGreen := color.RGBA{0, 100, 0, 255}
+    // Display round number
+    roundText := canvas.NewText(fmt.Sprintf("Round: %d", roundNumber), theme.ForegroundColor())
+    roundText.TextSize = 24
+    roundText.Move(fyne.NewPos(windowWidth/2-50, 10))
 
-	playerProgressTexts := make([]*canvas.Text, len(players)) // Create array for progress text
+    lightGreen := color.RGBA{34, 139, 34, 255}
+    darkGreen := color.RGBA{0, 100, 0, 255}
 
-	for i := 0; i < numLanes; i++ {
-		laneColor := lightGreen
-		if i%2 == 1 {
-			laneColor = darkGreen
-		}
-		lane := canvas.NewRectangle(laneColor)
-		lane.Resize(fyne.NewSize(float32(windowWidth), float32(laneHeight)))
-		lane.Move(fyne.NewPos(0, float32(laneHeight)*float32(i)))
-		trackContainer.Add(lane)
+    playerProgressTexts := make([]*canvas.Text, len(players)) // Create array for progress text
 
-		// Display player names and distance travelled at the beginning of lanes
-		playerNameText := canvas.NewText(players[i].Name, theme.ForegroundColor())
-		playerNameText.TextSize = 18
-		playerNameText.Move(fyne.NewPos(10, float32(laneHeight*i)+5))
-		trackContainer.Add(playerNameText)
+    for i := 0; i < numLanes; i++ {
+        laneColor := lightGreen
+        if i%2 == 1 {
+            laneColor = darkGreen
+        }
+        lane := canvas.NewRectangle(laneColor)
+        lane.Resize(fyne.NewSize(float32(windowWidth), float32(laneHeight)))
+        lane.Move(fyne.NewPos(0, float32(laneHeight)*float32(i)))
+        trackContainer.Add(lane)
 
-		// Distance text
-		progressText := canvas.NewText(fmt.Sprintf("0.0/%d", totalDistance), theme.ForegroundColor())
-		progressText.TextSize = 18
-		progressText.Move(fyne.NewPos(150, float32(laneHeight*i)+5))
-		playerProgressTexts[i] = progressText
-		trackContainer.Add(progressText)
-	}
+        // Display player names and distance travelled at the beginning of lanes
+        playerNameText := canvas.NewText(players[i].Name, theme.ForegroundColor())
+        playerNameText.TextSize = 18
+        playerNameText.Move(fyne.NewPos(10, float32(laneHeight*i)+5))
+        trackContainer.Add(playerNameText)
 
-	trackLine := canvas.NewLine(theme.ForegroundColor())
-	trackLine.StrokeWidth = 5
-	trackLine.Resize(fyne.NewSize(float32(windowWidth), 5))
-	trackLine.Move(fyne.NewPos(0, float32(windowHeight)/2-2))
+        // Distance text
+        progressText := canvas.NewText(fmt.Sprintf("0.0/%d", totalDistance), theme.ForegroundColor())
+        progressText.TextSize = 18
+        progressText.Move(fyne.NewPos(150, float32(laneHeight*i)+5))
+        playerProgressTexts[i] = progressText
+        trackContainer.Add(progressText)
+    }
 
-	startText := canvas.NewText("Start", theme.ForegroundColor())
-	startText.TextSize = 24
-	startText.Move(fyne.NewPos(10, float32(windowHeight)/2-30))
+    playerImages := make([]*canvas.Image, len(players))
+    for i := 0; i < numLanes; i++ {
+        imagePath := fmt.Sprintf("data/%s.png", players[i].UUID)
 
-	finishText := canvas.NewText("Finish", theme.ForegroundColor())
-	finishText.TextSize = 24
-	finishText.Move(fyne.NewPos(float32(windowWidth)-100, float32(windowHeight)/2-30))
+        // Check if the image exists, if not use default.png
+        if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+            fmt.Printf("Image for %s not found, using default.png\n", players[i].Name)
+            imagePath = "data/default.png"
+        } else {
+            fmt.Printf("Using image for %s: %s\n", players[i].Name, imagePath)
+        }
 
-	trackContainer.Add(trackLine)
-	trackContainer.Add(startText)
-	trackContainer.Add(finishText)
+        animal := canvas.NewImageFromFile(imagePath)
+        animal.Resize(fyne.NewSize(50, 50))
+        initialPos := fyne.NewPos(0, float32(laneHeight*i+laneHeight/2)-25)
+        animal.Move(initialPos)
+        playerImages[i] = animal
+        trackContainer.Add(animal)
+    }
 
-	playerImages := make([]*canvas.Image, len(players))
-	for i := 0; i < numLanes; i++ {
-		imagePath := fmt.Sprintf("data/%s.png", players[i].UUID)
+    rand.Seed(time.Now().UnixNano())
 
-		// Check if the image exists, if not use default.png
-		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
-			fmt.Printf("Image for %s not found, using default.png\n", players[i].Name)
-			imagePath = "data/default.png"
-		} else {
-			fmt.Printf("Using image for %s: %s\n", players[i].Name, imagePath)
-		}
+    for i := range players {
+        players[i].Distance = 0
+        players[i].Finished = false
+        players[i].Place = 0
+    }
 
-		animal := canvas.NewImageFromFile(imagePath)
-		animal.Resize(fyne.NewSize(50, 50))
-		initialPos := fyne.NewPos(0, float32(laneHeight*i+laneHeight/2)-25)
-		animal.Move(initialPos)
-		playerImages[i] = animal
-		trackContainer.Add(animal)
-	}
+    finishedPlayers := 0
+    currentPlace := 1
 
-	rand.Seed(time.Now().UnixNano())
+    // Add start, stop, and end buttons
+    startButton := widget.NewButton("Start Race", func() {
+        raceRunning = true
+    })
+    stopButton := widget.NewButton("Pause Race", func() {
+        raceRunning = false
+    })
+    endButton := widget.NewButton("End Race", func() {
+        dialog.NewConfirm("Are you sure?", "Are you sure you want to end the race?", 
+        func(confirmed bool) {
+            if confirmed {
+                finishedPlayers = len(players)
+				raceRunning = false
+                mainWindow.Close()
+            }
+        }, mainWindow).Show()
+    })
 
-	for i := range players {
-		players[i].Distance = 0
-		players[i].Finished = false
-		players[i].Place = 0
-	}
+    buttonContainer := container.NewHBox(startButton, stopButton, endButton, roundText)
+    layout := container.NewVBox(buttonContainer, trackContainer)
 
-	finishedPlayers := 0
-	currentPlace := 1
-
-	// Add start, stop, and end buttons
-	startButton := widget.NewButton("Start Race", func() {
+    go func() {
 		raceRunning = true
-	})
-	stopButton := widget.NewButton("Pause Race", func() {
-		raceRunning = false
-	})
-	endButton := widget.NewButton("End Race", func() {
-		dialog.NewConfirm("Are you sure?", "Are you sure you want to end the race?", 
-		func(confirmed bool) {
-			if confirmed {
-				finishedPlayers = len(players)
-				mainWindow.Close()
-			}
-		}, mainWindow).Show()
-	})
+        for finishedPlayers < len(players) {
+            if raceRunning {
+                roundNumber++ // Increment round number
+                roundText.Text = fmt.Sprintf("Round: %d", roundNumber) // Update round number display
+                canvas.Refresh(roundText)
 
-	buttonContainer := container.NewHBox(startButton, stopButton, endButton, roundText)
-	layout := container.NewVBox(buttonContainer, trackContainer)
+                for i := range players {
+                    if players[i].Finished {
+                        continue // Skip finished players
+                    }
 
-	go func() {
-		for finishedPlayers < len(players) {
-			if raceRunning {
-				roundNumber++ // Increment round number
-				roundText.Text = fmt.Sprintf("Round: %d", roundNumber) // Update round number display
-				canvas.Refresh(roundText)
+                    if players[i].Resting {
+                        // Recover endurance and skip this round
+                        players[i].Endurance += 3 * players[i].MinSpeed
+                        players[i].Resting = false
+                        continue
+                    }
 
-				for i := range players {
-					if !players[i].Finished {
-						players[i].Distance += RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
-						playerProgress := (players[i].Distance / float64(totalDistance)) * float64(windowWidth-50)
-						if playerProgress > float64(windowWidth-50) {
-							playerProgress = float64(windowWidth - 50)
-						}
-						newPos := fyne.NewPos(float32(playerProgress), float32(laneHeight*i+laneHeight/2)-25)
-						playerImages[i].Move(newPos)
-						canvas.Refresh(playerImages[i])
+                    // Deduct endurance based on the distance run this round
+                    distanceRun := RandomFloat(players[i].MinSpeed, players[i].MaxSpeed)
+                    players[i].Endurance -= distanceRun
 
-						// Update distance travelled text
-						playerProgressTexts[i].Text = fmt.Sprintf("%.1f/%d", players[i].Distance, totalDistance)
-						canvas.Refresh(playerProgressTexts[i])
+                    if players[i].Endurance <= 0 {
+                        players[i].Endurance = 0
+                        players[i].Resting = true
+                        continue
+                    }
 
-						if players[i].Distance >= float64(totalDistance) {
-							players[i].Finished = true
-							players[i].Place = currentPlace
-							currentPlace++
-							finishedPlayers++
-							playerImages[i].Move(fyne.NewPos(float32(windowWidth-50), float32(laneHeight*i+laneHeight/2)-25))
-							canvas.Refresh(playerImages[i])
-						}
-					}
-				}
-			}
-			time.Sleep(100 * time.Millisecond)
-		}
+                    // Move player if not resting
+                    players[i].Distance += distanceRun
+                    playerProgress := (players[i].Distance / float64(totalDistance)) * float64(windowWidth-50)
+                    if playerProgress > float64(windowWidth-50) {
+                        playerProgress = float64(windowWidth - 50)
+                    }
+                    newPos := fyne.NewPos(float32(playerProgress), float32(laneHeight*i+laneHeight/2)-25)
+                    playerImages[i].Move(newPos)
+                    canvas.Refresh(playerImages[i])
 
-		CalculateScores(players, totalDistance)
-		ShowRaceResultsWindow(myApp, players, mainWindow, totalDistance, roundNumber)
-		mainWindow.Close()
-	}()
+                    // Update distance travelled text
+                    playerProgressTexts[i].Text = fmt.Sprintf("%.1f/%d", players[i].Distance, totalDistance)
+                    canvas.Refresh(playerProgressTexts[i])
 
-	mainWindow.SetContent(layout)
-	mainWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight+100))) // Adjust window size
-	mainWindow.CenterOnScreen()
-	mainWindow.Show()
+                    if players[i].Distance >= float64(totalDistance) {
+                        players[i].Finished = true
+                        players[i].Place = currentPlace
+                        currentPlace++
+                        finishedPlayers++
+                        playerImages[i].Move(fyne.NewPos(float32(windowWidth-50), float32(laneHeight*i+laneHeight/2)-25))
+                        canvas.Refresh(playerImages[i])
+                    }
+                }
+            }
+            time.Sleep(100 * time.Millisecond)
+        }
+
+        CalculateScores(players, totalDistance)
+        ShowRaceResultsWindow(myApp, players, mainWindow, totalDistance, roundNumber)
+        mainWindow.Close()
+    }()
+
+    mainWindow.SetContent(layout)
+    mainWindow.Resize(fyne.NewSize(float32(windowWidth), float32(windowHeight+100))) // Adjust window size
+    mainWindow.CenterOnScreen()
+    mainWindow.Show()
 }

@@ -37,15 +37,18 @@ func ReadCSV(filename string) ([]Player, error) {
 	return players, nil
 }
 
+
 type Player struct {
-	Name      string
-	UUID      string
-	Distance  float64
-	MinSpeed  float64
-	MaxSpeed  float64
-	Place     int
-	Finished  bool
-	Score     int
+    Name        string
+    Distance    float64
+    Finished    bool
+    Place       int
+    MinSpeed    float64
+    MaxSpeed    float64
+    Score       int
+    UUID        string
+    Endurance   float64
+    Resting     bool
 }
 
 
