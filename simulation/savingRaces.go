@@ -80,7 +80,6 @@ func SaveRaceResults(players []Player, totalDistance, numRounds int, uuid string
 	// Open or create the CSV file
 	file, err := os.Create(filePath)
 	if err != nil {
-		fmt.Println("Failed to create file:", err)
 		return
 	}
 	defer file.Close()
@@ -108,9 +107,7 @@ func SaveRaceResults(players []Player, totalDistance, numRounds int, uuid string
 
 	// Update the player scores in "data/animal.simulation"
 	if err := SavePlayersToCSV("data/animal.simulation", players); err != nil {
-		fmt.Println("Failed to update scores in animal.simulation:", err)
 	}
 
-	fmt.Println("Race results saved to:", filePath)
 }
 

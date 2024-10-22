@@ -3,7 +3,6 @@ package simulation
 import (
 	"github.com/google/uuid"
 	"encoding/csv"
-	"fmt"
 	"os"
 )
 
@@ -39,6 +38,5 @@ func CreateAnimal (name string, minSpeed string, maxSpeed string) {
 	data := [][]string{{name,"0",minSpeed,maxSpeed,id}}
 	err := WriteCSV("data/animal.simulation", data, true)// true means append
 	if err != nil {
-		fmt.Println("Error:", err)
 	}
 }

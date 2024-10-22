@@ -2,7 +2,6 @@ package settings
 
 import (
 	"os"
-	"fmt"
 	"path/filepath"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
@@ -25,14 +24,12 @@ func CheckAndCreateFolderAndFile(mainWindow fyne.Window) {
 		// Create the folder if it doesn't exist
 		err = os.Mkdir(folderName, 0755)
 		if err != nil {
-			fmt.Println("error 1")
 			dialog.NewError(err, mainWindow).Show()
 		}
 	}
 
 	// Check if the picture file exists
 	if _, err := os.Stat(pictureFilepath); os.IsNotExist(err) {
-		fmt.Println("error 2")
 		dialog.NewError(err, mainWindow).Show()
 	}
 
@@ -41,7 +38,6 @@ func CheckAndCreateFolderAndFile(mainWindow fyne.Window) {
 		// Create the file if it doesn't exist
 		file, err := os.Create(filePath)
 		if err != nil {
-			fmt.Println("error 3")
 			dialog.NewError(err, mainWindow).Show()
 		}
 		defer file.Close()
@@ -49,7 +45,6 @@ func CheckAndCreateFolderAndFile(mainWindow fyne.Window) {
 		// Write the header to the file
 		_, err = file.WriteString(fileHeader)
 		if err != nil {
-			fmt.Println("error 4")
 			dialog.NewError(err, mainWindow).Show()
 		}
 	} else {

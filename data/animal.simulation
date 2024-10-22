@@ -1,7 +1,5 @@
 Name,Score,Min Speed,Max Speed,UUID
-Tazmanian Devil,275,1,20,844a4839-ef34-490f-8615-70ac0a1ed660
-Fred,178,5.1,8.7,afd6e5bc-0587-4a48-978c-40454ba28cf1
-Hare,166,5,8,3045ba8c-10e7-4bf9-a560-1229763d2ec3
-John,161,4,8,f82434a3-c5b0-4425-b56d-f13b4bc4a14d
-Monty,163,1.1,8.8,9c87b822-9d5f-45a3-8ffd-49be50ca9d2b
-Jill,93,5.6,1.2,6582d4cd-1a13-40d7-a3e2-c931a0ad05d8
+Bob,0,7,8,af16ea7d-a75b-4536-8c6e-6ba116480be5
+Test,343,45,85,d053598b-991e-4aca-b1a6-f98160fa2195
+Monty,0,1,7,c9ed9e2a-b5ab-449e-a432-032f1df45e84
+Jill,0,5,5,e18ad91e-6da4-4f18-829c-5523965209ca

@@ -6,7 +6,6 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"strconv"
-	"fmt"
 	"hareandtortoise/v2/simulation"
 )
 
@@ -70,8 +69,6 @@ func ShowSetupRaceMenu(app fyne.App) [][]string {
 			numberOfPlayers = numberOfPlayers + 1
 		}
 
-		fmt.Println("Race Length:", raceLengthEntry.Text)
-		fmt.Println("Selected Players:", playerData)
 		simulation.RunSimulation(app, numberOfPlayers, 70, 1000, playerData, raceLengthEntry.Text)
 		// Close the window
 		setupWindow.Close()
