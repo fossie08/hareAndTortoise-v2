@@ -9,6 +9,8 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/dialog"
+	"fmt"
 )
 
 // extend the original widget
@@ -52,10 +54,20 @@ func AddAnimal(hareandtortoise fyne.App, window fyne.Window) {
 	content := container.NewVBox(animalName, animalMinSpeed, animalMaxSpeed, widget.NewButtonWithIcon("Save", theme.ConfirmIcon(), func() {
 		minSpeed, _ := strconv.ParseFloat(animalMinSpeed.Text, 64)
 		maxSpeed, _ := strconv.ParseFloat(animalMaxSpeed.Text, 64)
-
+		
 		// Check if minSpeed is greater than maxSpeed and swap if necessary
 		if minSpeed > maxSpeed {
 			minSpeed, maxSpeed = maxSpeed, minSpeed
+		}
+
+		if minSpeed <= 0 {
+			minSpeed = 1
+			dialog.NewError(fmt.Errorf("minimum speed cannot be 0 or below"), window)
+		}
+
+		if maxSpeed <= 0 {
+			maxSpeed = 1
+			dialog.NewError(fmt.Errorf("maximum speed cannot be 0 or below"), window)
 		}
 
 		// Convert back to string for saving
