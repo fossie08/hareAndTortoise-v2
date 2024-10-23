@@ -2,12 +2,14 @@ package ui
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"sort"
 	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -91,6 +93,16 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 		// Check if minSpeed is greater than maxSpeed and swap if necessary
 		if minSpeed > maxSpeed {
 			minSpeed, maxSpeed = maxSpeed, minSpeed
+		}
+
+		if minSpeed <= 0 {
+			minSpeed = 1
+			dialog.NewError(fmt.Errorf("minimum speed cannot be 0 or below"), formWindow)
+		}
+
+		if maxSpeed <= 0 {
+			maxSpeed = 1
+			dialog.NewError(fmt.Errorf("maximum speed cannot be 0 or below"), formWindow)
 		}
 
 		player.MinSpeed = minSpeed
