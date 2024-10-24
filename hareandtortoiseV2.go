@@ -8,28 +8,8 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"fyne.io/fyne/v2/dialog"
-	"os/exec"
-	"runtime"
-	
 )
 
-func openbrowser(url string, myWindow fyne.Window) {
-	var err error
-	switch runtime.GOOS {
-	case "linux":
-	  err = exec.Command("xdg-open", url).Start()
-	case "windows":
-	  err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
-	case "darwin":
-	  err = exec.Command("open", url).Start()
-	default:
-	  
-	}
-	if err != nil {
-	  dialog.NewError(err, myWindow)
-	}
-  }
 
 func main() {
 	// Create the app
@@ -54,10 +34,6 @@ func main() {
 			settings.ImageSelection(hareandtortoise)
 		}),
 		widget.NewToolbarSpacer(),
-		widget.NewToolbarAction(theme.HelpIcon(), func() {
-			const url string = "github.com/fossie08/hareAndTortoise-v2"
-			openbrowser(url, mainWindow)
-		}),
 		widget.NewToolbarAction(theme.SettingsIcon(), func() {
 			settings.ShowSettingsWindow(hareandtortoise)
 		}),
