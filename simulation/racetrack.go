@@ -3,6 +3,7 @@ package simulation
 import (
 	"fmt"
 	"os"
+    "log"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -14,7 +15,7 @@ import (
 	"math/rand"
 	"sort"
 	"github.com/google/uuid"
-
+    "hareandtortoise/v2/misc"
 )
 
 
@@ -34,6 +35,9 @@ func CalculateScores(players []Player, totalDistance int) {
 
 // Modify ShowRaceResultsWindow to include a "Save Race" button
 func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Window, totalDistance, numRounds int) {
+    if err := misc.Cheering(); err != nil {
+		log.Fatal(err)
+	}
 	resultsWindow := app.NewWindow("Race Results")
 	resultsContainer := container.NewVBox()
 
