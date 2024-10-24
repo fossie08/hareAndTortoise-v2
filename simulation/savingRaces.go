@@ -38,10 +38,19 @@ func SavePlayersToCSV(filename string, players []Player) error {
 
 		uuid := record[4] // Assuming UUID is the 5th column
 		if updatedPlayer, ok := playerMap[uuid]; ok {
+			// Read the existing score from the CSV (assuming the score is the 2nd column)
+			existingScore, err := strconv.Atoi(record[1])
+			if err != nil {
+				return fmt.Errorf("invalid score in record %d: %v", i, err)
+			}
+
+			// Add the incoming score to the existing score
+			newScore := existingScore + updatedPlayer.Score
+
 			// Replace the player's data with updated values
 			records[i] = []string{
 				updatedPlayer.Name,
-				strconv.Itoa(updatedPlayer.Score),
+				strconv.Itoa(newScore), // Save the new score
 				strconv.FormatFloat(updatedPlayer.MinSpeed, 'f', -1, 64),
 				strconv.FormatFloat(updatedPlayer.MaxSpeed, 'f', -1, 64),
 				updatedPlayer.UUID,
@@ -68,6 +77,7 @@ func SavePlayersToCSV(filename string, players []Player) error {
 
 	return nil
 }
+
 
 
 // Save the race results to a CSV file, updating the existing score

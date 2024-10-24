@@ -21,18 +21,12 @@ import (
 
 var raceRunning bool = true
 
-// Calculate scores based on race position, race distance, and number of players
+// score calculation - revered positions last gets 1
 func CalculateScores(players []Player, totalDistance int) {
 	numPlayers := len(players)
-	basePoints := func(place int) int {
-		// Base points are higher for smaller races and decrease by position
-		return (numPlayers - place + 1) * 10 // Example: 1st place gets 10 * numPlayers points
-	}
 	for i, player := range players {
 		if player.Finished {
-			distanceBonus := float64(player.Distance) / float64(totalDistance) // Bonus based on distance
-			speedBonus := (player.MaxSpeed - player.MinSpeed) / 2               // Speed difference bonus
-			players[i].Score = basePoints(player.Place) + int(distanceBonus*100) + int(speedBonus*10)
+			players[i].Score = (numPlayers - player.Place)+1
 		}
 	}
 }
