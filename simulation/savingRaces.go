@@ -98,7 +98,7 @@ func SaveRaceResults(players []Player, totalDistance, numRounds int, uuid string
 	defer writer.Flush()
 
 	// Write headers, including Date and Time
-	writer.Write([]string{"UUID", "Place", "Distance Travelled", "Score", "Total Distance", "Rounds", "Date", "Time"})
+	writer.Write([]string{"UUID", "Place", "Distance Travelled", "Score", "Total Distance", "Rounds", "Date", "Time", "Name"})
 
 	// Write player data
 	for _, player := range players {
@@ -111,6 +111,7 @@ func SaveRaceResults(players []Player, totalDistance, numRounds int, uuid string
 			fmt.Sprintf("%d", numRounds),
 			currentTime[:10], // Date
 			currentTime[11:], // Time
+			player.Name,
 		}
 		writer.Write(record)
 	}
