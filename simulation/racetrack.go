@@ -57,9 +57,16 @@ func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Windo
 	saveButton := widget.NewButton("Save Race", func() {
 		raceUUID := uuid.New().String()
 		SaveRaceResults(players, totalDistance, numRounds, raceUUID)
-		dialog.ShowInformation("Race Saved", "Race results have been saved successfully.", resultsWindow)
-	})
+        dialog.NewConfirm("Race saved", "Do you want to report the race to the remote server", 
+        func(confirmed bool) {
+            if confirmed {
+                misc.UploadToRemote(raceUUID+".simulation")
+            }
+            resultsWindow.Close()
+        }, resultsWindow).Show()
+    })
 	resultsContainer.Add(saveButton)
+
 
 	resultsWindow.SetContent(resultsContainer)
 	resultsWindow.Resize(fyne.NewSize(300, 400))
