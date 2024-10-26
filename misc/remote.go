@@ -1,5 +1,6 @@
 package misc
-
+//import some files
+//this is to upload the race files to a remote server
 import (
     "bytes"
     "fmt"

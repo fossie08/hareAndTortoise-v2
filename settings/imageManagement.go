@@ -1,5 +1,5 @@
 package settings
-
+//import some stuff
 import (
 	"fmt"
 	"image"
@@ -99,7 +99,7 @@ func ImageSelection(app fyne.App) {
 			// Get the UUID of the selected animal
 			playerUUID, ok := playerUUIDs[selectedAnimal]
 			if !ok {
-				dialog.ShowError(fmt.Errorf("Animal not found"), w)
+				dialog.ShowError(fmt.Errorf("animal not found"), w)
 				return
 			}
 

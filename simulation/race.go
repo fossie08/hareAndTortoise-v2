@@ -1,13 +1,11 @@
 package simulation
-
+//import some stuff
 import (
 	"encoding/csv"
 	"os"
 	"fmt"
 	"strconv"
-	//"time"
 	"math/rand"
-	//"hareandtortoise/v2/ui"
 	"fyne.io/fyne/v2"
 )
 
@@ -36,7 +34,7 @@ func ReadCSV(filename string) ([]Player, error) {
 	return players, nil
 }
 
-
+//player data structure
 type Player struct {
     Name        string
     Distance    float64

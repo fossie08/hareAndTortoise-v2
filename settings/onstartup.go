@@ -1,5 +1,5 @@
 package settings
-
+// import some stuff
 import (
 	"os"
 	"path/filepath"

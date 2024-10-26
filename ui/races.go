@@ -1,5 +1,5 @@
 package ui
-
+// import some stuff
 import (
     "bufio"
     "encoding/csv"
@@ -14,7 +14,7 @@ import (
 	"fmt"
     "strings"
 )
-
+// race data structure
 type Race struct {
     UUID               string
     Place              int
@@ -25,12 +25,12 @@ type Race struct {
     Date               string
     Time               string
 }
-
+// animal data strucutre
 type Animal struct {
     Name string
     UUID string
 }
-
+// animal insights data structure
 type AnimalInsights struct {
     TotalScore         int
     RacesParticipated  int
@@ -71,7 +71,7 @@ func ReadRaceFiles() (map[string][]Race, error) {
     return raceMap, nil
 }
 
-// parseRaceFile parses a .simulation file and returns race data.
+// parseRaceFile parses a .simulation file and returns race data
 func parseRaceFile(filename string) ([]Race, error) {
     file, err := os.Open(filename)
     if err != nil {
@@ -110,8 +110,8 @@ func parseRaceFile(filename string) ([]Race, error) {
             Score:             score,
             TotalDistance:     totalDistance,
             Rounds:            rounds,
-            Date:              generalData[6], // Extracting date from the first row
-            Time:              generalData[7], // Extracting time from the first row
+            Date:              generalData[6], 
+            Time:              generalData[7], 
         })
     }
 

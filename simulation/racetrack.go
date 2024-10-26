@@ -1,5 +1,5 @@
 package simulation
-
+//import some stuff
 import (
 	"fmt"
 	"os"
@@ -22,7 +22,7 @@ import (
 
 var raceRunning bool = true
 
-// score calculation - revered positions last gets 1
+// score calculation - revered positions last gets 1 point
 func CalculateScores(players []Player, totalDistance int) {
 	numPlayers := len(players)
 	for i, player := range players {
@@ -74,6 +74,7 @@ func ShowRaceResultsWindow(app fyne.App, players []Player, mainWindow fyne.Windo
 	resultsWindow.Show()
 }
 
+//function that does the ui and simulation part of the program
 func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth float32, players []Player, totalDistance int) {
     mainWindow := myApp.NewWindow("Race Simulation")
 	var roundNumber int = 1
@@ -171,7 +172,7 @@ func DrawRaceTrack(myApp fyne.App, numLanes int, laneHeight int, windowWidth flo
 
     buttonContainer := container.NewHBox(startButton, stopButton, endButton, roundText)
     layout := container.NewVBox(buttonContainer, trackContainer)
-
+    // simulation loop
     go func() {
 		raceRunning = true
         for finishedPlayers < len(players) {

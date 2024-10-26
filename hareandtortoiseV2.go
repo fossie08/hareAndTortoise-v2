@@ -1,5 +1,5 @@
 package main
-
+//import some libraries
 import (
 	"hareandtortoise/v2/settings"
 	"hareandtortoise/v2/ui"
@@ -10,7 +10,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-
+// main function
 func main() {
 	// Create the app
 	hareandtortoise := app.New()

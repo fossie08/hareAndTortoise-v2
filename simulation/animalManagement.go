@@ -1,11 +1,11 @@
 package simulation
-
+//import some stuff
 import (
 	"github.com/google/uuid"
 	"encoding/csv"
 	"os"
 )
-
+// writecsv here again to prevent circular imports
 func WriteCSV(filename string, data [][]string, appendMode bool) error {
 	var file *os.File
 	var err error
@@ -32,7 +32,7 @@ func WriteCSV(filename string, data [][]string, appendMode bool) error {
 
 	return nil
 }
-
+//creates the animal in the database
 func CreateAnimal (name string, minSpeed string, maxSpeed string) {
 	id := uuid.New().String()
 	data := [][]string{{name,"0",minSpeed,maxSpeed,id}}

@@ -1,19 +1,18 @@
 package ui
-
+//import some libraries
 import (
 	"encoding/csv"
 	"fmt"
 	"os"
 	"sort"
 	"strconv"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
-
+// define the Player data structure type
 type Player struct {
 	Name     string
 	Score    int
@@ -37,8 +36,9 @@ func ReadCSV(filename string) ([]Player, error) {
 	}
 
 	var players []Player
-	for _, record := range records[1:] { // Skipping the header in the CSV file
-		score, _ := strconv.Atoi(record[1]) // Convert score from string to int
+	for _, record := range records[1:] { 
+		//casting into integers and floats
+		score, _ := strconv.Atoi(record[1]) 
 		minSpeed, _ := strconv.ParseFloat(record[2], 64)
 		maxSpeed, _ := strconv.ParseFloat(record[3], 64)
 		players = append(players, Player{Name: record[0], Score: score, MinSpeed: minSpeed, MaxSpeed: maxSpeed, UUID: record[4]})
@@ -62,6 +62,7 @@ func UpdateCSV(filename string, players []Player) error {
 	for _, player := range players {
 		record := []string{
 			player.Name,
+			// casting into strings
 			strconv.Itoa(player.Score),
 			strconv.FormatFloat(player.MinSpeed, 'f', -1, 64),
 			strconv.FormatFloat(player.MaxSpeed, 'f', -1, 64),
@@ -71,7 +72,7 @@ func UpdateCSV(filename string, players []Player) error {
 	}
 	return nil
 }
-
+// edit player form/window
 func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, filename string, playerData *[][]string) {
 	formWindow := fyne.CurrentApp().NewWindow("Edit Player")
 	// Create entries for editing player data
@@ -94,7 +95,7 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 		if minSpeed > maxSpeed {
 			minSpeed, maxSpeed = maxSpeed, minSpeed
 		}
-
+		//check if min or max speeed is less than or equal to 0, if so set to 1
 		if minSpeed <= 0 {
 			minSpeed = 1
 			dialog.NewError(fmt.Errorf("minimum speed cannot be 0 or below"), formWindow)
@@ -169,9 +170,10 @@ func ShowEmbeddedEditForm(list *widget.Table, player *Player, players []Player, 
 func UpdateLeaderboardContent(list *widget.Table, playerData [][]string) {
 	list.Refresh()
 }
-
+//leaderboard container
 func DisplayLeaderboard() *fyne.Container {
-	playerData := [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
+	//header row
+	playerData := [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}}
 	players, err := ReadCSV("data/animal.simulation")
 	if err != nil {
 		return nil
@@ -187,7 +189,8 @@ func DisplayLeaderboard() *fyne.Container {
 		func() fyne.CanvasObject { return widget.NewLabel("") },
 		func(id widget.TableCellID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(playerData[id.Row][id.Col])
-			if id.Row == 0 { // Bold headers
+			if id.Row == 0 { 
+				// Bold headers
 				o.(*widget.Label).TextStyle = fyne.TextStyle{Bold: true}
 			}
 		},
@@ -196,7 +199,8 @@ func DisplayLeaderboard() *fyne.Container {
 	// Sorting buttons
 	sortByScoreButton := widget.NewButton("Sort by Score", func() {
 		sort.Slice(players, func(i, j int) bool {
-			return players[i].Score > players[j].Score // Sort by score (descending)
+			// Sort by score (descending)
+			return players[i].Score > players[j].Score
 		})
 		// Update the playerData slice after sorting
 		playerData = [][]string{{"Name", "Score", "Min Speed", "Max Speed", "UUID"}} // Header row
@@ -229,7 +233,7 @@ func DisplayLeaderboard() *fyne.Container {
 		}
 		UpdateLeaderboardContent(list, playerData) // Refresh the list with the updated playerData
 	})
-
+	// creating a toolbar 
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.MediaReplayIcon(), func() {
 			players, err = ReadCSV("data/animal.simulation")
@@ -289,7 +293,7 @@ func DisplayLeaderboard() *fyne.Container {
 
 	return content
 }
-
+// save updated players back to the csv file
 func SavePlayersToCSV(filename string, players []Player) error {
 	file, err := os.Create(filename)
 	if err != nil {

@@ -1,11 +1,9 @@
 package ui
-
+//import some libraries
 import (
 	"hareandtortoise/v2/simulation"
 	"strconv"
-
 	"fyne.io/fyne/v2"
-
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
@@ -13,7 +11,7 @@ import (
 	"fmt"
 )
 
-// extend the original widget
+// creating a custom text box for number only entry
 type numericalEntry struct {
 	widget.Entry
 }
@@ -23,7 +21,7 @@ func newNumericalEntry() *numericalEntry {
 	entry.ExtendBaseWidget(entry)
 	return entry
 }
-
+// number only and . and , (used in some languages)
 func (e *numericalEntry) TypedRune(r rune) {
 	if (r >= '0' && r <= '9') || r == '.' || r == ',' {
 		e.Entry.TypedRune(r)
@@ -42,7 +40,7 @@ func (e *numericalEntry) TypedShortcut(shortcut fyne.Shortcut) {
 		e.Entry.TypedShortcut(shortcut)
 	}
 }
-
+//add animal ui
 func AddAnimal(hareandtortoise fyne.App, window fyne.Window) {
 	animalName := widget.NewEntry()
 	animalName.SetPlaceHolder("Animal name")
@@ -59,7 +57,7 @@ func AddAnimal(hareandtortoise fyne.App, window fyne.Window) {
 		if minSpeed > maxSpeed {
 			minSpeed, maxSpeed = maxSpeed, minSpeed
 		}
-
+		// check if min or max speed is less than or equal to 0 
 		if minSpeed <= 0 {
 			minSpeed = 1
 			dialog.NewError(fmt.Errorf("minimum speed cannot be 0 or below"), window)
