@@ -25,5 +25,5 @@ go.work.sum
 .env
 
 # my save files
-.simulation
+*.simulation
 settings.json
