@@ -42,7 +42,7 @@ func ShowSetupRaceMenu(app fyne.App) [][]string {
 
 	// Race length entry
 	raceLengthLabel := widget.NewLabel("Race Length (meters):")
-	raceLengthEntry := widget.NewEntry()
+	raceLengthEntry := newNumericalEntry()
 	raceLengthEntry.SetPlaceHolder("Enter race length")
 
 	// Start Race button

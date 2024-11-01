@@ -21,13 +21,13 @@ func newNumericalEntry() *numericalEntry {
 	entry.ExtendBaseWidget(entry)
 	return entry
 }
-// number only and . and , (used in some languages)
+// number only and .
 func (e *numericalEntry) TypedRune(r rune) {
-	if (r >= '0' && r <= '9') || r == '.' || r == ',' {
+	if (r >= '0' && r <= '9') || r == '.' {
 		e.Entry.TypedRune(r)
 	}
 }
-
+// prevents copy and paste in
 func (e *numericalEntry) TypedShortcut(shortcut fyne.Shortcut) {
 	paste, ok := shortcut.(*fyne.ShortcutPaste)
 	if !ok {
