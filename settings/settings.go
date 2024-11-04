@@ -46,7 +46,7 @@ func saveSettings(settings Settings) error {
 }
 
 // ShowSettingsWindow creates and shows the settings window for theme selection and remote settings
-func ShowSettingsWindow(app fyne.App) {
+func ShowSettingsWindow(app fyne.App, version string) {
 	settingsWindow := app.NewWindow("Settings")
 
 	// Store the current theme setting
@@ -106,7 +106,7 @@ func ShowSettingsWindow(app fyne.App) {
 			println("Error saving settings:", err.Error())
 		}
 	})
-
+	versionlabel := widget.NewLabel(version)
 	// Layout the UI components
 	content := container.NewVBox(
 		themeLabel,
@@ -119,6 +119,7 @@ func ShowSettingsWindow(app fyne.App) {
 		remotePasswordLabel,
 		remotePasswordEntry,
 		saveButton,
+		versionlabel,
 	)
 
 	// Show the window

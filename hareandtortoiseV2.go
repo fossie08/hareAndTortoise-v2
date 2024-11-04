@@ -12,6 +12,7 @@ import (
 
 // main function
 func main() {
+	version := "v1.1-alpha.1"
 	// Create the app
 	hareandtortoise := app.New()
 	mainWindow := hareandtortoise.NewWindow("Animal Simulation")
@@ -35,7 +36,7 @@ func main() {
 		}),
 		widget.NewToolbarSpacer(),
 		widget.NewToolbarAction(theme.SettingsIcon(), func() {
-			settings.ShowSettingsWindow(hareandtortoise)
+			settings.ShowSettingsWindow(hareandtortoise, version)
 		}),
 		widget.NewToolbarAction(theme.ContentClearIcon(), func() {
 			mainWindow.Close()
